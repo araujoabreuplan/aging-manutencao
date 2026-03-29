@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Aging MAN - Araujo Abreu</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        :root { 
+            --primary: #6A0304; 
+            --bg: #f1f3f4; 
+            --white: #ffffff; 
+            --danger: #d93025; 
+            --success: #34a853;
+        }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: var(--bg); color: #3c4043; }
+        
+        .nav-bar { 
+            background: var(--primary); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            padding: 0 30px;
+            height: 110px; 
+        }
+        .nav-menu { display: flex; align-items: center; height: 100%; }
+        .nav-item { padding: 0 25px; cursor: pointer; font-weight: 500; color: rgba(255,255,255,0.7); line-height: 110px; transition: 0.3s; text-transform: uppercase; }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .nav-item.active { color: #fff; border-bottom: 5px solid #fff; }
+
+        .logo-container img { height: 90px; width: auto; display: block; }
+
+        .container { max-width: 1600px; margin: 20px auto; padding: 0 20px; }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        .kpi-container { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; }
+        .card { background: var(--white); padding: 15px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); text-align: center; border-top: 4px solid var(--primary); min-width: 140px; flex: 1; }
+        .card.total-card { border-top-color: #3c4043; background: #f8f9fa; }
+        .card h3 { margin: 0; font-size: 0.7em; color: #70757a; text-transform: uppercase; min-height: 30px; }
+        .card p { margin: 10px 0 0; font-size: 1.6em; font-weight: bold; color: var(--primary); }
+
+        /* Upload */
+        .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 40px; }
+        .upload-box { background: var(--white); border: 3px dashed #dadce0; padding: 80px 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .upload-box.dragover { border-color: var(--primary); background: #fff5f5; transform: scale(1.02); }
+        .upload-box.done { border-color: var(--success); background: #e6f4ea; border-style: solid; }
+
+        /* Filtros */
+        .filter-bar { background: var(--white); padding: 20px; border-radius: 8px; margin-bottom: 10px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); align-items: start; }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        .filter-group label { font-size: 11px; font-weight: bold; color: var(--primary); text-transform: uppercase; }
+        
+        .multi-select-wrapper { border: 1px solid #dadce0; border-radius: 6px; background: #fafafa; overflow: hidden; }
+        .multi-select-controls { display: flex; border-bottom: 1px solid #eee; }
+        .multi-select-controls button { flex: 1; border: none; padding: 4px; font-size: 9px; cursor: pointer; background: #f8f9fa; font-weight: bold; color: #555; }
+        .multi-select-controls button:hover { background: #eee; }
+        
+        .checkbox-list { max-height: 100px; overflow-y: auto; padding: 8px; }
+        .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 11px; margin-bottom: 3px; cursor: pointer; }
+
+        /* Busca */
+        .search-bar-container { background: var(--white); padding: 15px 20px; border-radius: 8px 8px 0 0; border-bottom: 1px solid #eee; margin-top: 20px; }
+        input[type="text"] { padding: 10px; border: 1px solid #dadce0; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; height: 38px; }
+        
+        .chart-wrapper { background: var(--white); padding: 40px 20px 20px 20px; border-radius: 8px; height: 350px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .table-container { background: var(--white); border-radius: 0 0 8px 8px; overflow: auto; box-shadow: 0 1px 2px rgba(0,0,0,0.1); max-height: 600px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1400px; }
+        th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #eee; position: sticky; top: 0; color: var(--primary); z-index: 10; }
+        td { padding: 10px; border-bottom: 1px solid #f1f3f4; }
+        .badge-wo { background: #fff0f0; color: var(--primary); padding: 2px 5px; border-radius: 4px; font-weight: bold; }
+        .btn-export { background: var(--success); color: white; border: none; padding: 0 20px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 38px; align-self: end; }
+    </style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <div class="nav-menu">
+        <div id="nav-upload" class="nav-item active" onclick="switchPage('upload')">1. Upload de Arquivos</div>
+        <div id="nav-dash" class="nav-item" onclick="switchPage('dashboard')" style="display:none;">2. Dashboard Aging</div>
+    </div>
+    <div class="logo-container">
+        <img src="araujo_abreu_engenharia_logo.jpg" alt="Logo">
+    </div>
+</div>
+
+<div class="container">
+    <div id="page-upload" class="page active">
+        <div class="upload-grid">
+            <div class="upload-box" id="boxAging">
+                <strong>Planilha Aging</strong>
+                <p id="txtAging">Clique ou arraste o arquivo aqui</p>
+                <input type="file" id="inAging" hidden accept=".xlsx, .xls, .csv">
+            </div>
+            <div class="upload-box" id="boxWm">
+                <strong>Planilha wm_order</strong>
+                <p id="txtWm">Clique ou arraste o arquivo aqui</p>
+                <input type="file" id="inWm" hidden accept=".xlsx, .xls, .csv">
+            </div>
+        </div>
+    </div>
+
+    <div id="page-dashboard" class="page">
+        <div class="kpi-container" id="kpiContainer"></div>
+
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label>SITE</label>
+                <div class="multi-select-wrapper">
+                    <div class="multi-select-controls">
+                        <button onclick="toggleAll('siteChecklist', true)">Todos</button>
+                        <button onclick="toggleAll('siteChecklist', false)">Limpar</button>
+                    </div>
+                    <div class="checkbox-list" id="siteChecklist"></div>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label>OFICINAS</label>
+                <div class="multi-select-wrapper">
+                    <div class="multi-select-controls">
+                        <button onclick="toggleAll('oficinaChecklist', true)">Todas</button>
+                        <button onclick="toggleAll('oficinaChecklist', false)">Limpar</button>
+                    </div>
+                    <div class="checkbox-list" id="oficinaChecklist"></div>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label>GESTOR</label>
+                <div class="multi-select-wrapper">
+                    <div class="multi-select-controls">
+                        <button onclick="toggleAll('gestorChecklist', true)">Todos</button>
+                        <button onclick="toggleAll('gestorChecklist', false)">Limpar</button>
+                    </div>
+                    <div class="checkbox-list" id="gestorChecklist">
+                        <label class="checkbox-item"><input type="checkbox" value="Sérgio" checked onchange="aplicarFiltros()"> Sérgio</label>
+                        <label class="checkbox-item"><input type="checkbox" value="Leonardo" checked onchange="aplicarFiltros()"> Leonardo</label>
+                        <label class="checkbox-item"><input type="checkbox" value="Thamiris" checked onchange="aplicarFiltros()"> Thamiris</label>
+                        <label class="checkbox-item"><input type="checkbox" value="Outros" checked onchange="aplicarFiltros()"> Outros</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label>FAIXA AGING</label>
+                <div class="multi-select-wrapper">
+                    <div class="multi-select-controls">
+                        <button onclick="toggleAll('faixaChecklist', true)">Todas</button>
+                        <button onclick="toggleAll('faixaChecklist', false)">Limpar</button>
+                    </div>
+                    <div class="checkbox-list" id="faixaChecklist">
+                        <label class="checkbox-item"><input type="checkbox" value="30-74" checked onchange="aplicarFiltros()"> 30-74 dias</label>
+                        <label class="checkbox-item"><input type="checkbox" value="75+" checked onchange="aplicarFiltros()"> 75+ dias</label>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-export" onclick="exportarExcel()">Exportar Excel</button>
+        </div>
+
+        <div class="chart-wrapper"><canvas id="canvasChart"></canvas></div>
+
+        <div class="search-bar-container">
+            <div class="filter-group">
+                <label>BUSCA RÁPIDA (PROTOCOLO, WO, SOLICITANTE)</label>
+                <input type="text" id="buscaWO" placeholder="Digite para filtrar a tabela abaixo..." onkeyup="aplicarFiltros()">
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Protocolo MAN</th>
+                        <th>WO</th>
+                        <th>Aging</th>
+                        <th>Site</th>
+                        <th>Oficina</th>
+                        <th>Gestor</th>
+                        <th>Solicitante</th>
+                        <th>Local</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    let agingBase = null, wmBase = null, dataFinal = [];
+    let chartInstance = null;
+    Chart.register(ChartDataLabels);
+
+    function switchPage(page) {
+        document.querySelectorAll('.page, .nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById('page-' + page).classList.add('active');
+        document.getElementById('nav-' + page).classList.add('active');
+    }
+
+    // --- CORREÇÃO DO UPLOAD (ARRSTAR E CLICAR) ---
+    function setupUploadEvents(boxId, inputId, type) {
+        const box = document.getElementById(boxId);
+        const input = document.getElementById(inputId);
+
+        box.addEventListener('click', () => input.click());
+
+        input.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0], type);
+        });
+
+        box.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            box.classList.add('dragover');
+        });
+
+        box.addEventListener('dragleave', () => box.classList.remove('dragover'));
+
+        box.addEventListener('drop', (e) => {
+            e.preventDefault();
+            box.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0], type);
+        });
+    }
+
+    setupUploadEvents('boxAging', 'inAging', 'aging');
+    setupUploadEvents('boxWm', 'inWm', 'wm');
+
+    async function handleFile(file, type) {
+        if(!file) return;
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer);
+        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+        
+        if (type === 'aging') { 
+            agingBase = json; 
+            document.getElementById('boxAging').classList.add('done');
+            document.getElementById('txtAging').innerText = "✅ " + file.name;
+        } else { 
+            wmBase = json; 
+            document.getElementById('boxWm').classList.add('done');
+            document.getElementById('txtWm').innerText = "✅ " + file.name;
+        }
+
+        if (agingBase && wmBase) { 
+            processData(); 
+            document.getElementById('nav-dash').style.display = 'block'; 
+            switchPage('dashboard'); 
+        }
+    }
+
+    function definirGestor(oficina) {
+        if (!oficina) return "Outros";
+        const of = oficina.toUpperCase();
+        if (of.includes("MECÂNICA") || of.includes("REFRIGERAÇÃO") || of.includes("REFRIGERACAO") || of.includes("MECANICA")) return "Sérgio";
+        if (of.includes("ELÉTRICA") || of.includes("ELETRICA") || of.includes("ELETROELETRÔNICOS") || of.includes("ELETROELETRONICOS")) return "Leonardo";
+        if (of.includes("CIVIL") || of.includes("SERRALHERIA") || of.includes("MARCENARIA") || of.includes("PEDREIRO") || of.includes("PINTURA")) return "Thamiris";
+        return "Outros";
+    }
+
+    function processData() {
+        const wmMap = {};
+        wmBase.forEach(row => { if (row['Protocolo pai']) wmMap[row['Protocolo pai']] = row; });
+
+        const hoje = new Date();
+        dataFinal = [];
+        const oficinasSet = new Set();
+
+        agingBase.forEach(row => {
+            const prot = String(row['protocolo'] || row['Protocolo'] || "");
+            if (prot.toUpperCase().startsWith("MAN")) {
+                const wm = wmMap[prot] || {};
+                const dtRaw = row['dt criação'] || row['Dt Criação'];
+                let dt = new Date((dtRaw - 25569) * 86400 * 1000);
+                if (isNaN(dt.getTime())) dt = new Date(dtRaw);
+                
+                const dias = Math.max(0, Math.floor((hoje - dt) / (1000 * 60 * 60 * 24)));
+                const oficina = wm['Oficina'] || 'N/A';
+
+                dataFinal.push({
+                    pai: prot,
+                    wo: wm['Protocolo'] || '-',
+                    aging: dias,
+                    site: row['site'] || row['Site'] || 'N/A',
+                    oficina: oficina,
+                    gestor: definirGestor(oficina),
+                    solicitante: wm['Solicitante'] || '-',
+                    local: wm['Local'] || '-',
+                    estado: wm['Estado'] || '-'
+                });
+                oficinasSet.add(oficina);
+            }
+        });
+
+        const siteList = document.getElementById('siteChecklist');
+        const allowedSites = ['BT', 'JB', 'EG'];
+        siteList.innerHTML = allowedSites.map(s => `
+            <label class="checkbox-item"><input type="checkbox" value="${s}" checked onchange="aplicarFiltros()"> ${s}</label>
+        `).join('');
+
+        const ofList = document.getElementById('oficinaChecklist');
+        ofList.innerHTML = [...oficinasSet].sort().map(of => `
+            <label class="checkbox-item"><input type="checkbox" value="${of}" checked onchange="aplicarFiltros()"> ${of}</label>
+        `).join('');
+
+        aplicarFiltros();
+    }
+
+    function toggleAll(containerId, status) {
+        document.querySelectorAll(`#${containerId} input`).forEach(cb => cb.checked = status);
+        aplicarFiltros();
+    }
+
+    function aplicarFiltros() {
+        const selSites = [...document.querySelectorAll('#siteChecklist input:checked')].map(cb => cb.value);
+        const selOficinas = [...document.querySelectorAll('#oficinaChecklist input:checked')].map(cb => cb.value);
+        const selGestores = [...document.querySelectorAll('#gestorChecklist input:checked')].map(cb => cb.value);
+        const selFaixas = [...document.querySelectorAll('#faixaChecklist input:checked')].map(cb => cb.value);
+        const busca = document.getElementById('buscaWO').value.toUpperCase();
+
+        const filtrados = dataFinal.filter(d => {
+            const mSite = selSites.includes(d.site);
+            const mOficina = selOficinas.includes(d.oficina);
+            const mGestor = selGestores.includes(d.gestor);
+            const mBusca = d.wo.toUpperCase().includes(busca) || d.pai.toUpperCase().includes(busca) || d.solicitante.toUpperCase().includes(busca);
+            
+            let mFaixa = false;
+            selFaixas.forEach(f => {
+                if (f === "30-74" && d.aging >= 30 && d.aging <= 74) mFaixa = true;
+                if (f === "75+" && d.aging >= 75) mFaixa = true;
+            });
+
+            return mSite && mOficina && mGestor && mBusca && mFaixa;
+        });
+
+        updateUI(filtrados);
+    }
+
+    function updateUI(lista) {
+        const resumo = lista.reduce((acc, cur) => { acc[cur.oficina] = (acc[cur.oficina] || 0) + 1; return acc; }, {});
+        document.getElementById('kpiContainer').innerHTML = `<div class="card total-card"><h3>TOTAL MAN</h3><p>${lista.length}</p></div>` + 
+            Object.entries(resumo).sort((a,b) => b[1]-a[1]).map(([of, q]) => `<div class="card"><h3>${of}</h3><p>${q}</p></div>`).join('');
+
+        document.getElementById('tableBody').innerHTML = lista.map(d => `
+            <tr>
+                <td><b>${d.pai}</b></td><td><span class="badge-wo">${d.wo}</span></td>
+                <td style="font-weight:bold; color:${d.aging >= 75 ? 'var(--danger)' : 'inherit'}">${d.aging} d</td>
+                <td>${d.site}</td><td>${d.oficina}</td><td>${d.gestor}</td><td>${d.solicitante}</td>
+                <td>${d.local}</td><td>${d.estado}</td>
+            </tr>
+        `).join('');
+
+        const contagem = lista.reduce((acc, cur) => { const lbl = cur.aging + " d"; acc[lbl] = (acc[lbl] || 0) + 1; return acc; }, {});
+        const labels = Object.keys(contagem).sort((a,b) => parseInt(a) - parseInt(b));
+        
+        if (chartInstance) chartInstance.destroy();
+        chartInstance = new Chart(document.getElementById('canvasChart'), {
+            type: 'bar',
+            data: { labels: labels, datasets: [{ data: labels.map(l => contagem[l]), backgroundColor: '#6A0304', borderRadius: 5 }] },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: false, datalabels: { display: true, anchor: 'end', align: 'top', color: '#6A0304', font: { weight: 'bold' } } },
+                scales: { y: { display: false }, x: { grid: { display: false } } }
+            }
+        });
+    }
+
+    function exportarExcel() {
+        const ws = XLSX.utils.json_to_sheet(dataFinal);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Dados");
+        XLSX.writeFile(wb, "Relatorio_Aging_Gestores.xlsx");
+    }
+</script>
+</body>
+</html>
