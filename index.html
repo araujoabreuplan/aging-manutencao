@@ -75,15 +75,14 @@
         .badge-wo { background: #fff0f0; color: var(--primary); padding: 2px 5px; border-radius: 4px; font-weight: bold; }
         .btn-export { background: var(--success); color: white; border: none; padding: 0 20px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 38px; align-self: end; }
         
-        /* Mensagem de carregando */
-        #loadingMsg { color: var(--primary); font-weight: bold; margin-bottom: 10px; display: none; }
+        #loadingMsg { color: var(--primary); font-weight: bold; margin-bottom: 10px; padding: 10px; background: #fff; border-radius: 8px; display: none; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
 
 <div class="nav-bar">
     <div class="nav-menu">
-        <div id="nav-upload" class="nav-item active" onclick="switchPage('upload')">1. Configuração/Arquivos</div>
+        <div id="nav-upload" class="nav-item active" onclick="switchPage('upload')">1. Arquivos / Status</div>
         <div id="nav-dash" class="nav-item" onclick="switchPage('dashboard')" style="display:none;">2. Dashboard Aging (EG)</div>
     </div>
     <div class="logo-container">
@@ -93,19 +92,22 @@
 
 <div class="container">
     <div id="page-upload" class="page active">
-        <div id="loadingMsg">⏳ Tentando carregar dados automáticos do servidor...</div>
+        <div id="loadingMsg">⏳ Sincronizando dados com o GitHub...</div>
         <div class="upload-grid">
             <div class="upload-box" id="boxAging">
-                <strong>Planilha Aging (aging.xlsx)</strong>
-                <p id="txtAging">Clique ou arraste o arquivo aqui</p>
-                <input type="file" id="inAging" hidden accept=".xlsx, .xls, .csv">
+                <strong>Planilha Aging</strong>
+                <p id="txtAging">Aguardando arquivo 'aging.xlsx'...</p>
+                <input type="file" id="inAging" hidden accept=".xlsx">
             </div>
             <div class="upload-box" id="boxWm">
-                <strong>Planilha wm_order (wm_order.xlsx)</strong>
-                <p id="txtWm">Clique ou arraste o arquivo aqui</p>
-                <input type="file" id="inWm" hidden accept=".xlsx, .xls, .csv">
+                <strong>Planilha wm_order</strong>
+                <p id="txtWm">Aguardando arquivo 'wm_order.xlsx'...</p>
+                <input type="file" id="inWm" hidden accept=".xlsx">
             </div>
         </div>
+        <p style="text-align: center; color: #666; font-size: 12px; margin-top: 20px;">
+            Dica: Se os dados não atualizarem, pressione <b>Ctrl + F5</b> no teclado.
+        </p>
     </div>
 
     <div id="page-dashboard" class="page">
@@ -152,7 +154,7 @@
                 </div>
             </div>
 
-            <button class="btn-export" onclick="exportarExcel()">Exportar Excel</button>
+            <button class="btn-export" onclick="exportarExcel()">Exportar Excel (EG)</button>
         </div>
 
         <div class="chart-wrapper"><canvas id="canvasChart"></canvas></div>
@@ -186,25 +188,40 @@
     let chartInstance = null;
     Chart.register(ChartDataLabels);
 
-    // --- CARREGAMENTO AUTOMÁTICO DO GITHUB ---
+    // --- CARREGAMENTO INTELIGENTE (ANTI-CACHE + FALLBACK) ---
     window.onload = async function() {
         const msg = document.getElementById('loadingMsg');
         msg.style.display = 'block';
         
+        // Gera um código único baseado na hora para forçar o download do arquivo novo
+        const cacheBuster = "?v=" + new Date().getTime(); 
+
         try {
-            await Promise.all([
-                fetchAutoFile('aging.xlsx', 'aging'),
-                fetchAutoFile('wm_order.xlsx', 'wm')
-            ]);
+            // 1. Carregar WM Order
+            try {
+                await fetchAutoFile('wm_order.xlsx' + cacheBuster, 'wm');
+            } catch(e) {
+                await fetchAutoFile('Wm_order.xlsx' + cacheBuster, 'wm');
+            }
+
+            // 2. Carregar Aging (Tenta minúsculo, depois maiúsculo)
+            try {
+                await fetchAutoFile('aging.xlsx' + cacheBuster, 'aging');
+            } catch(e) {
+                console.log("Tentando Aging.xlsx com 'A' maiúsculo...");
+                await fetchAutoFile('Aging.xlsx' + cacheBuster, 'aging');
+            }
+
         } catch (e) {
-            msg.innerText = "⚠️ Arquivos automáticos não encontrados. Por favor, faça o upload manual abaixo.";
-            console.warn("Auto-load falhou. Aguardando upload manual.");
+            msg.innerHTML = "⚠️ <b>Erro ao sincronizar arquivos automáticos.</b><br>Verifique se os nomes estão corretos no GitHub ou use o upload manual abaixo.";
+            msg.style.color = "#d93025";
+            console.error("Falha no carregamento automático:", e);
         }
     };
 
     async function fetchAutoFile(url, type) {
         const res = await fetch(url);
-        if (!res.ok) throw new Error("Arquivo não encontrado");
+        if (!res.ok) throw new Error("Não encontrado: " + url);
         const buf = await res.arrayBuffer();
         processExcelBuffer(buf, type);
     }
@@ -227,18 +244,6 @@
                 document.getElementById('txt' + type.charAt(0).toUpperCase() + type.slice(1)).innerText = "✅ " + e.target.files[0].name;
             }
         });
-        box.addEventListener('dragover', (e) => { e.preventDefault(); box.classList.add('dragover'); });
-        box.addEventListener('dragleave', () => box.classList.remove('dragover'));
-        box.addEventListener('drop', (e) => {
-            e.preventDefault();
-            box.classList.remove('dragover');
-            if (e.dataTransfer.files.length) {
-                const reader = new FileReader();
-                reader.onload = (ev) => processExcelBuffer(ev.target.result, type);
-                reader.readAsArrayBuffer(e.dataTransfer.files[0]);
-                document.getElementById('txt' + type.charAt(0).toUpperCase() + type.slice(1)).innerText = "✅ " + e.dataTransfer.files[0].name;
-            }
-        });
     }
 
     setupUploadEvents('boxAging', 'inAging', 'aging');
@@ -247,17 +252,29 @@
     function processExcelBuffer(buffer, type) {
         const workbook = XLSX.read(buffer);
         const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-        if (type === 'aging') { agingBase = json; document.getElementById('boxAging').classList.add('done'); }
-        else { wmBase = json; document.getElementById('boxWm').classList.add('done'); }
-        if (agingBase && wmBase) { processData(); document.getElementById('nav-dash').style.display = 'block'; switchPage('dashboard'); }
+        if (type === 'aging') { 
+            agingBase = json; 
+            document.getElementById('boxAging').classList.add('done');
+            document.getElementById('txtAging').innerText = "✅ Sincronizado";
+        } else { 
+            wmBase = json; 
+            document.getElementById('boxWm').classList.add('done');
+            document.getElementById('txtWm').innerText = "✅ Sincronizado";
+        }
+        if (agingBase && wmBase) { 
+            processData(); 
+            document.getElementById('nav-dash').style.display = 'block'; 
+            document.getElementById('loadingMsg').style.display = 'none';
+            switchPage('dashboard'); 
+        }
     }
 
     function definirGestor(oficina) {
         if (!oficina) return "Outros";
         const of = oficina.toUpperCase();
-        if (of.includes("MECÂNICA") || of.includes("REFRIGERAÇÃO") || of.includes("REFRIGERACAO") || of.includes("MECANICA")) return "Sérgio";
-        if (of.includes("ELÉTRICA") || of.includes("ELETRICA") || of.includes("ELETROELETRÔNICOS") || of.includes("ELETROELETRONICOS")) return "Leonardo";
-        if (of.includes("CIVIL") || of.includes("SERRALHERIA") || of.includes("MARCENARIA") || of.includes("PEDREIRO") || of.includes("PINTURA")) return "Thamiris";
+        if (of.includes("MECÂNICA") || of.includes("REFRIGERAÇÃO") || of.includes("MECANICA")) return "Sérgio";
+        if (of.includes("ELÉTRICA") || of.includes("ELETRICA") || of.includes("ELETROELETRÔNICOS")) return "Leonardo";
+        if (of.includes("CIVIL") || of.includes("SERRALHERIA") || of.includes("MARCENARIA") || of.includes("PINTURA")) return "Thamiris";
         return "Outros";
     }
 
@@ -270,14 +287,16 @@
 
         agingBase.forEach(row => {
             const prot = String(row['protocolo'] || row['Protocolo'] || "");
-            const site = row['site'] || row['Site'] || 'N/A';
-            if (prot.toUpperCase().startsWith("MAN") && site.toUpperCase() === 'EG') {
+            const site = String(row['site'] || row['Site'] || "").toUpperCase();
+            
+            if (prot.toUpperCase().startsWith("MAN") && site === 'EG') {
                 const wm = wmMap[prot] || {};
                 const dtRaw = row['dt criação'] || row['Dt Criação'];
                 let dt = new Date((dtRaw - 25569) * 86400 * 1000);
                 if (isNaN(dt.getTime())) dt = new Date(dtRaw);
                 const dias = Math.max(0, Math.floor((hoje - dt) / (1000 * 60 * 60 * 24)));
                 const oficina = wm['Oficina'] || 'N/A';
+                
                 dataFinal.push({
                     pai: prot, wo: wm['Protocolo'] || '-', aging: dias, site: site,
                     oficina: oficina, gestor: definirGestor(oficina),
@@ -350,7 +369,7 @@
     function exportarExcel() {
         const ws = XLSX.utils.json_to_sheet(dataFinal);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Dados");
+        XLSX.utils.book_append_sheet(wb, ws, "Dados_EG_Aging");
         XLSX.writeFile(wb, "Relatorio_Aging_EG.xlsx");
     }
 </script>
