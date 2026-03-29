@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Aging MAN - Araujo Abreu</title>
+    <title>Painel Aging MAN - EG - Araujo Abreu</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
@@ -55,7 +55,8 @@
         .upload-box.done { border-color: var(--success); background: #e6f4ea; border-style: solid; }
 
         /* Filtros */
-        .filter-bar { background: var(--white); padding: 20px; border-radius: 8px; margin-bottom: 10px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); align-items: start; }
+        /* Ajustado grid-template-columns para 3 colunas principais + botão */
+        .filter-bar { background: var(--white); padding: 20px; border-radius: 8px; margin-bottom: 10px; display: grid; grid-template-columns: 1.5fr 1.5fr 1fr auto; gap: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); align-items: start; }
         .filter-group { display: flex; flex-direction: column; gap: 5px; }
         .filter-group label { font-size: 11px; font-weight: bold; color: var(--primary); text-transform: uppercase; }
         
@@ -73,7 +74,7 @@
         
         .chart-wrapper { background: var(--white); padding: 40px 20px 20px 20px; border-radius: 8px; height: 350px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .table-container { background: var(--white); border-radius: 0 0 8px 8px; overflow: auto; box-shadow: 0 1px 2px rgba(0,0,0,0.1); max-height: 600px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1400px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1200px; } /* Ajustado min-width */
         th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #eee; position: sticky; top: 0; color: var(--primary); z-index: 10; }
         td { padding: 10px; border-bottom: 1px solid #f1f3f4; }
         .badge-wo { background: #fff0f0; color: var(--primary); padding: 2px 5px; border-radius: 4px; font-weight: bold; }
@@ -85,7 +86,7 @@
 <div class="nav-bar">
     <div class="nav-menu">
         <div id="nav-upload" class="nav-item active" onclick="switchPage('upload')">1. Upload de Arquivos</div>
-        <div id="nav-dash" class="nav-item" onclick="switchPage('dashboard')" style="display:none;">2. Dashboard Aging</div>
+        <div id="nav-dash" class="nav-item" onclick="switchPage('dashboard')" style="display:none;">2. Dashboard Aging (EG)</div>
     </div>
     <div class="logo-container">
         <img src="araujo_abreu_engenharia_logo.jpg" alt="Logo">
@@ -113,17 +114,6 @@
 
         <div class="filter-bar">
             <div class="filter-group">
-                <label>SITE</label>
-                <div class="multi-select-wrapper">
-                    <div class="multi-select-controls">
-                        <button onclick="toggleAll('siteChecklist', true)">Todos</button>
-                        <button onclick="toggleAll('siteChecklist', false)">Limpar</button>
-                    </div>
-                    <div class="checkbox-list" id="siteChecklist"></div>
-                </div>
-            </div>
-
-            <div class="filter-group">
                 <label>OFICINAS</label>
                 <div class="multi-select-wrapper">
                     <div class="multi-select-controls">
@@ -131,22 +121,6 @@
                         <button onclick="toggleAll('oficinaChecklist', false)">Limpar</button>
                     </div>
                     <div class="checkbox-list" id="oficinaChecklist"></div>
-                </div>
-            </div>
-
-            <div class="filter-group">
-                <label>GESTOR</label>
-                <div class="multi-select-wrapper">
-                    <div class="multi-select-controls">
-                        <button onclick="toggleAll('gestorChecklist', true)">Todos</button>
-                        <button onclick="toggleAll('gestorChecklist', false)">Limpar</button>
-                    </div>
-                    <div class="checkbox-list" id="gestorChecklist">
-                        <label class="checkbox-item"><input type="checkbox" value="Sérgio" checked onchange="aplicarFiltros()"> Sérgio</label>
-                        <label class="checkbox-item"><input type="checkbox" value="Leonardo" checked onchange="aplicarFiltros()"> Leonardo</label>
-                        <label class="checkbox-item"><input type="checkbox" value="Thamiris" checked onchange="aplicarFiltros()"> Thamiris</label>
-                        <label class="checkbox-item"><input type="checkbox" value="Outros" checked onchange="aplicarFiltros()"> Outros</label>
-                    </div>
                 </div>
             </div>
 
@@ -164,7 +138,7 @@
                 </div>
             </div>
 
-            <button class="btn-export" onclick="exportarExcel()">Exportar Excel</button>
+            <button class="btn-export" onclick="exportarExcel()">Exportar Excel (EG)</button>
         </div>
 
         <div class="chart-wrapper"><canvas id="canvasChart"></canvas></div>
@@ -185,7 +159,6 @@
                         <th>Aging</th>
                         <th>Site</th>
                         <th>Oficina</th>
-                        <th>Gestor</th>
                         <th>Solicitante</th>
                         <th>Local</th>
                         <th>Estado</th>
@@ -208,7 +181,6 @@
         document.getElementById('nav-' + page).classList.add('active');
     }
 
-    // --- CORREÇÃO DO UPLOAD (ARRSTAR E CLICAR) ---
     function setupUploadEvents(boxId, inputId, type) {
         const box = document.getElementById(boxId);
         const input = document.getElementById(inputId);
@@ -259,14 +231,7 @@
         }
     }
 
-    function definirGestor(oficina) {
-        if (!oficina) return "Outros";
-        const of = oficina.toUpperCase();
-        if (of.includes("MECÂNICA") || of.includes("REFRIGERAÇÃO") || of.includes("REFRIGERACAO") || of.includes("MECANICA")) return "Sérgio";
-        if (of.includes("ELÉTRICA") || of.includes("ELETRICA") || of.includes("ELETROELETRÔNICOS") || of.includes("ELETROELETRONICOS")) return "Leonardo";
-        if (of.includes("CIVIL") || of.includes("SERRALHERIA") || of.includes("MARCENARIA") || of.includes("PEDREIRO") || of.includes("PINTURA")) return "Thamiris";
-        return "Outros";
-    }
+    // Função definirGestor removida
 
     function processData() {
         const wmMap = {};
@@ -278,7 +243,10 @@
 
         agingBase.forEach(row => {
             const prot = String(row['protocolo'] || row['Protocolo'] || "");
-            if (prot.toUpperCase().startsWith("MAN")) {
+            const site = row['site'] || row['Site'] || 'N/A';
+
+            // --- FILTRO FIXO: APENAS SITE EG ---
+            if (prot.toUpperCase().startsWith("MAN") && site.toUpperCase() === 'EG') {
                 const wm = wmMap[prot] || {};
                 const dtRaw = row['dt criação'] || row['Dt Criação'];
                 let dt = new Date((dtRaw - 25569) * 86400 * 1000);
@@ -291,9 +259,9 @@
                     pai: prot,
                     wo: wm['Protocolo'] || '-',
                     aging: dias,
-                    site: row['site'] || row['Site'] || 'N/A',
+                    site: site,
                     oficina: oficina,
-                    gestor: definirGestor(oficina),
+                    // gestor removido
                     solicitante: wm['Solicitante'] || '-',
                     local: wm['Local'] || '-',
                     estado: wm['Estado'] || '-'
@@ -302,11 +270,7 @@
             }
         });
 
-        const siteList = document.getElementById('siteChecklist');
-        const allowedSites = ['BT', 'JB', 'EG'];
-        siteList.innerHTML = allowedSites.map(s => `
-            <label class="checkbox-item"><input type="checkbox" value="${s}" checked onchange="aplicarFiltros()"> ${s}</label>
-        `).join('');
+        // Checklist de SITE removido
 
         const ofList = document.getElementById('oficinaChecklist');
         ofList.innerHTML = [...oficinasSet].sort().map(of => `
@@ -322,16 +286,16 @@
     }
 
     function aplicarFiltros() {
-        const selSites = [...document.querySelectorAll('#siteChecklist input:checked')].map(cb => cb.value);
+        // selSites removido
         const selOficinas = [...document.querySelectorAll('#oficinaChecklist input:checked')].map(cb => cb.value);
-        const selGestores = [...document.querySelectorAll('#gestorChecklist input:checked')].map(cb => cb.value);
+        // selGestores removido
         const selFaixas = [...document.querySelectorAll('#faixaChecklist input:checked')].map(cb => cb.value);
         const busca = document.getElementById('buscaWO').value.toUpperCase();
 
         const filtrados = dataFinal.filter(d => {
-            const mSite = selSites.includes(d.site);
+            // mSite removido (já filtrado no processData)
             const mOficina = selOficinas.includes(d.oficina);
-            const mGestor = selGestores.includes(d.gestor);
+            // mGestor removido
             const mBusca = d.wo.toUpperCase().includes(busca) || d.pai.toUpperCase().includes(busca) || d.solicitante.toUpperCase().includes(busca);
             
             let mFaixa = false;
@@ -340,7 +304,8 @@
                 if (f === "75+" && d.aging >= 75) mFaixa = true;
             });
 
-            return mSite && mOficina && mGestor && mBusca && mFaixa;
+            // mGestor removido do retorno
+            return mOficina && mBusca && mFaixa;
         });
 
         updateUI(filtrados);
@@ -348,14 +313,14 @@
 
     function updateUI(lista) {
         const resumo = lista.reduce((acc, cur) => { acc[cur.oficina] = (acc[cur.oficina] || 0) + 1; return acc; }, {});
-        document.getElementById('kpiContainer').innerHTML = `<div class="card total-card"><h3>TOTAL MAN</h3><p>${lista.length}</p></div>` + 
+        document.getElementById('kpiContainer').innerHTML = `<div class="card total-card"><h3>TOTAL MAN (EG)</h3><p>${lista.length}</p></div>` + 
             Object.entries(resumo).sort((a,b) => b[1]-a[1]).map(([of, q]) => `<div class="card"><h3>${of}</h3><p>${q}</p></div>`).join('');
 
         document.getElementById('tableBody').innerHTML = lista.map(d => `
             <tr>
                 <td><b>${d.pai}</b></td><td><span class="badge-wo">${d.wo}</span></td>
                 <td style="font-weight:bold; color:${d.aging >= 75 ? 'var(--danger)' : 'inherit'}">${d.aging} d</td>
-                <td>${d.site}</td><td>${d.oficina}</td><td>${d.gestor}</td><td>${d.solicitante}</td>
+                <td>${d.site}</td><td>${d.oficina}</td><td>${d.solicitante}</td>
                 <td>${d.local}</td><td>${d.estado}</td>
             </tr>
         `).join('');
@@ -376,10 +341,26 @@
     }
 
     function exportarExcel() {
-        const ws = XLSX.utils.json_to_sheet(dataFinal);
+        // Exporta apenas os dados do EG filtrados visíveis na tabela
+        const selOficinas = [...document.querySelectorAll('#oficinaChecklist input:checked')].map(cb => cb.value);
+        const selFaixas = [...document.querySelectorAll('#faixaChecklist input:checked')].map(cb => cb.value);
+        const busca = document.getElementById('buscaWO').value.toUpperCase();
+
+        const filtradosParaExportar = dataFinal.filter(d => {
+            const mOficina = selOficinas.includes(d.oficina);
+            const mBusca = d.wo.toUpperCase().includes(busca) || d.pai.toUpperCase().includes(busca) || d.solicitante.toUpperCase().includes(busca);
+            let mFaixa = false;
+            selFaixas.forEach(f => {
+                if (f === "30-74" && d.aging >= 30 && d.aging <= 74) mFaixa = true;
+                if (f === "75+" && d.aging >= 75) mFaixa = true;
+            });
+            return mOficina && mBusca && mFaixa;
+        });
+
+        const ws = XLSX.utils.json_to_sheet(filtradosParaExportar);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Dados");
-        XLSX.writeFile(wb, "Relatorio_Aging_Gestores.xlsx");
+        XLSX.utils.book_append_sheet(wb, ws, "Dados_EG_Filtrados");
+        XLSX.writeFile(wb, "Relatorio_Aging_EG.xlsx");
     }
 </script>
 </body>
