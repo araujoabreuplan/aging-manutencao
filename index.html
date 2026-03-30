@@ -50,7 +50,6 @@
 
         .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 40px; }
         .upload-box { background: var(--white); border: 3px dashed #dadce0; padding: 80px 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; }
-        .upload-box.dragover { border-color: var(--primary); background: #fff5f5; transform: scale(1.02); }
         .upload-box.done { border-color: var(--success); background: #e6f4ea; border-style: solid; }
 
         .filter-bar { background: var(--white); padding: 20px; border-radius: 8px; margin-bottom: 10px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); align-items: start; }
@@ -249,12 +248,20 @@
         }
     }
 
+    // REGRA DE GESTORES ATUALIZADA
     function definirGestor(oficina) {
         if (!oficina) return "Outros";
         const of = oficina.toUpperCase();
-        if (of.includes("MECÂNICA") || of.includes("REFRIGERAÇÃO") || of.includes("MECANICA")) return "Sérgio";
-        if (of.includes("ELÉTRICA") || of.includes("ELETRICA") || of.includes("ELETROELETRÔNICOS")) return "Leonardo";
-        if (of.includes("CIVIL") || of.includes("SERRALHERIA") || of.includes("MARCENARIA") || of.includes("PINTURA")) return "Thamiris";
+        
+        // GRUPO SÉRGIO
+        if (of.includes("MECÂNICA") || of.includes("REFRIGERAÇÃO") || of.includes("MECANICA") || of.includes("REFRIGERACAO")) return "Sérgio";
+        
+        // GRUPO LEONARDO
+        if (of.includes("ELÉTRICA") || of.includes("ELETRICA") || of.includes("ELETROELETRÔNICOS") || of.includes("ELETROELETRONICOS")) return "Leonardo";
+        
+        // GRUPO THAMIRIS (INCLUINDO PEDREIRO)
+        if (of.includes("CIVIL") || of.includes("SERRALHERIA") || of.includes("MARCENARIA") || of.includes("PEDREIRO") || of.includes("PINTURA")) return "Thamiris";
+        
         return "Outros";
     }
 
@@ -347,7 +354,6 @@
     }
 
     function exportarExcel() {
-        // Lógica de exportação respeitando os filtros atuais
         const selOficinas = [...document.querySelectorAll('#oficinaChecklist input:checked')].map(cb => cb.value);
         const selGestores = [...document.querySelectorAll('#gestorChecklist input:checked')].map(cb => cb.value);
         const selFaixas = [...document.querySelectorAll('#faixaChecklist input:checked')].map(cb => cb.value);
@@ -370,9 +376,21 @@
             return;
         }
 
-        const ws = XLSX.utils.json_to_sheet(dadosFiltradosParaExportar);
+        // Criando planilha com colunas ordenadas e incluindo Gestor
+        const ws = XLSX.utils.json_to_sheet(dadosFiltradosParaExportar.map(d => ({
+            "Protocolo MAN": d.pai,
+            "WO": d.wo,
+            "Aging (Dias)": d.aging,
+            "Site": d.site,
+            "Oficina": d.oficina,
+            "Gestor Responsável": d.gestor,
+            "Solicitante": d.solicitante,
+            "Local": d.local,
+            "Estado": d.estado
+        })));
+
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Dados_Filtrados_EG");
+        XLSX.utils.book_append_sheet(wb, ws, "Relatório EG");
         XLSX.writeFile(wb, "Relatorio_Aging_EG_Filtrado.xlsx");
     }
 </script>
