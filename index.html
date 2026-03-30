@@ -105,9 +105,6 @@
                 <input type="file" id="inWm" hidden accept=".xlsx">
             </div>
         </div>
-        <p style="text-align: center; color: #666; font-size: 12px; margin-top: 20px;">
-            Dica: Se os dados não atualizarem, pressione <b>Ctrl + F5</b> no teclado.
-        </p>
     </div>
 
     <div id="page-dashboard" class="page">
@@ -188,40 +185,23 @@
     let chartInstance = null;
     Chart.register(ChartDataLabels);
 
-    // --- CARREGAMENTO INTELIGENTE (ANTI-CACHE + FALLBACK) ---
     window.onload = async function() {
         const msg = document.getElementById('loadingMsg');
         msg.style.display = 'block';
-        
-        // Gera um código único baseado na hora para forçar o download do arquivo novo
         const cacheBuster = "?v=" + new Date().getTime(); 
 
         try {
-            // 1. Carregar WM Order
-            try {
-                await fetchAutoFile('wm_order.xlsx' + cacheBuster, 'wm');
-            } catch(e) {
-                await fetchAutoFile('Wm_order.xlsx' + cacheBuster, 'wm');
-            }
-
-            // 2. Carregar Aging (Tenta minúsculo, depois maiúsculo)
-            try {
-                await fetchAutoFile('aging.xlsx' + cacheBuster, 'aging');
-            } catch(e) {
-                console.log("Tentando Aging.xlsx com 'A' maiúsculo...");
-                await fetchAutoFile('Aging.xlsx' + cacheBuster, 'aging');
-            }
-
+            try { await fetchAutoFile('wm_order.xlsx' + cacheBuster, 'wm'); } catch(e) { await fetchAutoFile('Wm_order.xlsx' + cacheBuster, 'wm'); }
+            try { await fetchAutoFile('aging.xlsx' + cacheBuster, 'aging'); } catch(e) { await fetchAutoFile('Aging.xlsx' + cacheBuster, 'aging'); }
         } catch (e) {
-            msg.innerHTML = "⚠️ <b>Erro ao sincronizar arquivos automáticos.</b><br>Verifique se os nomes estão corretos no GitHub ou use o upload manual abaixo.";
+            msg.innerHTML = "⚠️ Sincronização automática falhou. Use o upload manual.";
             msg.style.color = "#d93025";
-            console.error("Falha no carregamento automático:", e);
         }
     };
 
     async function fetchAutoFile(url, type) {
         const res = await fetch(url);
-        if (!res.ok) throw new Error("Não encontrado: " + url);
+        if (!res.ok) throw new Error("Não encontrado");
         const buf = await res.arrayBuffer();
         processExcelBuffer(buf, type);
     }
@@ -367,10 +347,33 @@
     }
 
     function exportarExcel() {
-        const ws = XLSX.utils.json_to_sheet(dataFinal);
+        // Lógica de exportação respeitando os filtros atuais
+        const selOficinas = [...document.querySelectorAll('#oficinaChecklist input:checked')].map(cb => cb.value);
+        const selGestores = [...document.querySelectorAll('#gestorChecklist input:checked')].map(cb => cb.value);
+        const selFaixas = [...document.querySelectorAll('#faixaChecklist input:checked')].map(cb => cb.value);
+        const busca = document.getElementById('buscaWO').value.toUpperCase();
+
+        const dadosFiltradosParaExportar = dataFinal.filter(d => {
+            const mOficina = selOficinas.includes(d.oficina);
+            const mGestor = selGestores.includes(d.gestor);
+            const mBusca = d.wo.toUpperCase().includes(busca) || d.pai.toUpperCase().includes(busca) || d.solicitante.toUpperCase().includes(busca);
+            let mFaixa = false;
+            selFaixas.forEach(f => {
+                if (f === "30-74" && d.aging >= 30 && d.aging <= 74) mFaixa = true;
+                if (f === "75+" && d.aging >= 75) mFaixa = true;
+            });
+            return mOficina && mGestor && mBusca && mFaixa;
+        });
+
+        if (dadosFiltradosParaExportar.length === 0) {
+            alert("Não há dados filtrados para exportar.");
+            return;
+        }
+
+        const ws = XLSX.utils.json_to_sheet(dadosFiltradosParaExportar);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Dados_EG_Aging");
-        XLSX.writeFile(wb, "Relatorio_Aging_EG.xlsx");
+        XLSX.utils.book_append_sheet(wb, ws, "Dados_Filtrados_EG");
+        XLSX.writeFile(wb, "Relatorio_Aging_EG_Filtrado.xlsx");
     }
 </script>
 </body>
