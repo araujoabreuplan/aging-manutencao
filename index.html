@@ -10,211 +10,407 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
-        :root { --primary: #6A0304; --bg: #f1f3f4; --white: #ffffff; --success: #34a853; --text: #3c4043; }
+        :root { 
+            --primary: #6A0304; 
+            --bg: #f1f3f4; 
+            --white: #ffffff; 
+            --danger: #d93025; 
+            --success: #34a853;
+            --text: #3c4043;
+        }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: var(--bg); color: var(--text); }
-        .nav-bar { background: var(--primary); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; height: 110px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; }
-        .nav-item { padding: 0 25px; cursor: pointer; font-weight: 500; color: rgba(255,255,255,0.7); line-height: 110px; transition: 0.3s; text-transform: uppercase; display: inline-block; }
+        
+        /* Navbar */
+        .nav-bar { 
+            background: var(--primary); 
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+            position: sticky; top: 0; z-index: 1000; 
+            padding: 0 30px; height: 110px; 
+        }
+        .nav-menu { display: flex; align-items: center; height: 100%; }
+        .nav-item { padding: 0 25px; cursor: pointer; font-weight: 500; color: rgba(255,255,255,0.7); line-height: 110px; transition: 0.3s; text-transform: uppercase; }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.1); }
         .nav-item.active { color: #fff; border-bottom: 5px solid #fff; }
-        .container { max-width: 1800px; margin: 20px auto; padding: 0 20px; }
+        .logo-container img { height: 90px; width: auto; display: block; }
+
+        .container { max-width: 1600px; margin: 20px auto; padding: 0 20px; }
         .page { display: none; }
         .page.active { display: block; }
+
+        /* KPI Cards */
         .kpi-container { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; }
-        .card { background: var(--white); padding: 15px; border-radius: 8px; text-align: center; border-top: 4px solid var(--primary); flex: 1; min-width: 150px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .filter-bar { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .dropdown { position: relative; }
-        .dropbtn { background: #f8f9fa; border: 1px solid #dadce0; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; min-width: 150px; }
-        .dropdown-content { display: none; position: absolute; background: white; min-width: 250px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); z-index: 1100; border-radius: 8px; padding: 10px; }
+        .card { background: var(--white); padding: 15px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); text-align: center; border-top: 4px solid var(--primary); min-width: 140px; flex: 1; }
+        .card.total-card { border-top-color: #3c4043; background: #f8f9fa; }
+        .card h3 { margin: 0; font-size: 0.7em; color: #70757a; text-transform: uppercase; min-height: 30px; }
+        .card p { margin: 10px 0 0; font-size: 1.6em; font-weight: bold; color: var(--primary); }
+
+        /* Filtros Suspensos */
+        .filter-bar { 
+            background: var(--white); padding: 15px; border-radius: 8px; margin-bottom: 15px; 
+            display: flex; gap: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); align-items: center; 
+            flex-wrap: wrap;
+        }
+        
+        .dropdown { position: relative; display: inline-block; }
+        .dropbtn { 
+            background-color: #f8f9fa; color: var(--text); padding: 10px 12px; 
+            font-size: 11px; font-weight: bold; border: 1px solid #dadce0; 
+            border-radius: 6px; cursor: pointer; min-width: 150px; text-align: left;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .dropbtn:after { content: ' ▼'; font-size: 8px; color: #777; }
+        .dropdown-content { 
+            display: none; position: absolute; background-color: white; 
+            min-width: 260px; box-shadow: 0px 8px 16px rgba(0,0,0,0.2); 
+            z-index: 1100; border-radius: 8px; padding: 12px; border: 1px solid #eee;
+            margin-top: 5px;
+        }
         .dropdown.show .dropdown-content { display: block; }
-        .chart-box { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; height: 350px; }
-        .table-container { background: white; border-radius: 8px; overflow: auto; max-height: 600px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1500px; }
-        th { background: #f8f9fa; padding: 12px; text-align: left; position: sticky; top: 0; color: var(--primary); z-index: 10; border-bottom: 2px solid #eee; }
+
+        .multi-select-controls { display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .multi-select-controls button { flex: 1; border: none; padding: 5px; font-size: 10px; cursor: pointer; background: #eee; border-radius: 4px; font-weight: bold; }
+        
+        .checkbox-list { max-height: 250px; overflow-y: auto; }
+        .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 11px; margin-bottom: 4px; cursor: pointer; padding: 3px; border-radius: 4px; }
+        .checkbox-item:hover { background: #f1f3f4; }
+
+        /* Tabela e Busca */
+        .search-bar-container { background: var(--white); padding: 15px 20px; border-radius: 8px 8px 0 0; border-bottom: 1px solid #eee; margin-top: 20px; }
+        input[type="text"] { padding: 10px; border: 1px solid #dadce0; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; height: 40px; }
+        
+        .table-container { background: var(--white); border-radius: 0 0 8px 8px; overflow: auto; box-shadow: 0 1px 2px rgba(0,0,0,0.1); max-height: 600px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1200px; } 
+        th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #eee; position: sticky; top: 0; color: var(--primary); z-index: 10; }
         td { padding: 10px; border-bottom: 1px solid #f1f3f4; }
-        .upload-card { background: white; padding: 40px; border-radius: 12px; border: 2px dashed #ccc; text-align: center; cursor: pointer; flex: 1; }
-        .upload-card.done { border-color: var(--success); background: #f0fff4; border-style: solid; }
-        #errorLog { color: white; background: #d93025; padding: 10px; border-radius: 6px; margin-bottom: 10px; display: none; text-align: center; font-weight: bold; }
+        
+        .btn-export { background: var(--success); color: white; border: none; padding: 0 25px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 40px; margin-left: auto; }
+        #loadingMsg { color: var(--primary); font-weight: bold; padding: 15px; background: #fff; border-radius: 8px; display: none; text-align: center;}
     </style>
 </head>
 <body>
 
 <div class="nav-bar">
-    <div>
-        <div id="nav-upload" class="nav-item active" onclick="switchPage('upload')">1. Arquivos</div>
-        <div id="nav-dash" class="nav-item" onclick="switchPage('dashboard')" style="display:none;">2. Painel Aging (EG)</div>
+    <div class="nav-menu">
+        <div id="nav-upload" class="nav-item active" onclick="switchPage('upload')">1. Arquivos / Status</div>
+        <div id="nav-dash" class="nav-item" onclick="switchPage('dashboard')" style="display:none;">2. Dashboard Aging (EG)</div>
     </div>
-    <img src="araujo_abreu_engenharia_logo.jpg" style="height:80px;">
+    <div class="logo-container"><img src="araujo_abreu_engenharia_logo.jpg"></div>
 </div>
 
 <div class="container">
-    <div id="errorLog"></div>
-
     <div id="page-upload" class="page active">
-        <div style="display: flex; gap: 20px; margin-top: 40px;">
-            <div class="upload-card" id="boxAging"><strong>Aging MAN</strong><p id="txtAging">Aguardando aging.xlsx</p><input type="file" id="inAging" hidden></div>
-            <div class="upload-card" id="boxWm"><strong>WM Order</strong><p id="txtWm">Aguardando wm_order.xlsx</p><input type="file" id="inWm" hidden></div>
-            <div class="upload-card" id="boxExtra" style="border-style: dotted;"><strong>Opcional: Notas</strong><p id="txtExtra">Cruzar Histórico</p><input type="file" id="inExtra" hidden></div>
+        <div id="loadingMsg">⏳ Sincronizando dados...</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 40px;">
+            <div class="card" id="boxAging" style="padding: 50px; cursor: pointer; border: 2px dashed #ccc;">
+                <strong>Planilha Aging</strong>
+                <p id="txtAging">Clique para carregar 'aging.xlsx'</p>
+                <input type="file" id="inAging" hidden accept=".xlsx">
+            </div>
+            <div class="card" id="boxWm" style="padding: 50px; cursor: pointer; border: 2px dashed #ccc;">
+                <strong>Planilha wm_order</strong>
+                <p id="txtWm">Clique para carregar 'wm_order.xlsx'</p>
+                <input type="file" id="inWm" hidden accept=".xlsx">
+            </div>
         </div>
     </div>
 
     <div id="page-dashboard" class="page">
         <div class="kpi-container" id="kpiContainer"></div>
+        
         <div class="filter-bar">
-            <div class="dropdown" id="dropGestor"><button class="dropbtn" onclick="toggleDropdown('dropGestor')">Gestores</button><div class="dropdown-content" id="listGestor"></div></div>
-            <div class="dropdown" id="dropOficina"><button class="dropbtn" onclick="toggleDropdown('dropOficina')">Oficinas</button><div class="dropdown-content" id="listOficina"></div></div>
-            <div class="dropdown" id="dropEstado"><button class="dropbtn" onclick="toggleDropdown('dropEstado')">Estados</button><div class="dropdown-content" id="listEstado"></div></div>
-            <input type="text" id="busca" placeholder="Buscar Protocolo..." onkeyup="filtrar()" style="padding:10px; border:1px solid #ddd; border-radius:6px; width:280px;">
-            <button style="background:var(--success); color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; font-weight:bold; margin-left:auto;" onclick="exportar()">Exportar Excel</button>
+            <div class="dropdown" id="dropGestor">
+                <button class="dropbtn" onclick="toggleDropdown('dropGestor')">Gestores</button>
+                <div class="dropdown-content">
+                    <div class="multi-select-controls">
+                        <button onclick="toggleAll('gestorChecklist', true)">Todos</button>
+                        <button onclick="toggleAll('gestorChecklist', false)">Limpar</button>
+                    </div>
+                    <div class="checkbox-list" id="gestorChecklist"></div>
+                </div>
+            </div>
+
+            <div class="dropdown" id="dropOficina">
+                <button class="dropbtn" onclick="toggleDropdown('dropOficina')">Oficinas</button>
+                <div class="dropdown-content">
+                    <div class="multi-select-controls">
+                        <button onclick="toggleAll('oficinaChecklist', true)">Todas</button>
+                        <button onclick="toggleAll('oficinaChecklist', false)">Limpar</button>
+                    </div>
+                    <div class="checkbox-list" id="oficinaChecklist"></div>
+                </div>
+            </div>
+
+            <div class="dropdown" id="dropEstado">
+                <button class="dropbtn" onclick="toggleDropdown('dropEstado')">Estados</button>
+                <div class="dropdown-content">
+                    <div class="multi-select-controls">
+                        <button onclick="toggleAll('estadoChecklist', true)">Todos</button>
+                        <button onclick="toggleAll('estadoChecklist', false)">Limpar</button>
+                    </div>
+                    <div class="checkbox-list" id="estadoChecklist"></div>
+                </div>
+            </div>
+
+            <div class="dropdown" id="dropFaixa">
+                <button class="dropbtn" onclick="toggleDropdown('dropFaixa')">Faixa Aging</button>
+                <div class="dropdown-content">
+                    <div class="checkbox-list" id="faixaChecklist">
+                        <label class="checkbox-item"><input type="checkbox" value="30-74" checked onchange="aplicarFiltros()"> 30-74 dias</label>
+                        <label class="checkbox-item"><input type="checkbox" value="75+" checked onchange="aplicarFiltros()"> 75+ dias</label>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-export" onclick="exportarExcel()">Exportar Excel (EG)</button>
         </div>
-        <div class="chart-box"><canvas id="canvasChart"></canvas></div>
-        <div class="table-container"><table><thead><tr><th>Protocolo</th><th>WO</th><th>Aging</th><th>Oficina</th><th>Gestor</th><th>Estado</th><th>Notas Sistema</th><th>Minhas Obs.</th></tr></thead><tbody id="tbody"></tbody></table></div>
+
+        <div class="chart-wrapper"><canvas id="canvasChart"></canvas></div>
+
+        <div class="search-bar-container">
+            <input type="text" id="buscaWO" placeholder="Busca rápida (Protocolo, WO, Solicitante...)" onkeyup="aplicarFiltros()">
+        </div>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr><th>Protocolo</th><th>WO</th><th>Aging</th><th>Site</th><th>Oficina</th><th>Solicitante</th><th>Local</th><th>Estado</th></tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <script>
-    let dbAging = null, dbWm = null, dbExtra = {}, finalData = [], chartObj = null;
-    let filterSel = { gestores: [], oficinas: [], estados: [] };
+    let agingBase = null, wmBase = null, dataFinal = [];
+    let chartInstance = null;
+    let selecoes = { gestores: [], oficinas: [], estados: [] };
 
-    window.onload = () => {
-        const v = "?v=" + Date.now();
-        carregar('aging.xlsx' + v, 'aging');
-        carregar('wm_order.xlsx' + v, 'wm');
+    // Dropdowns
+    window.onclick = function(e) {
+        if (!e.target.matches('.dropbtn') && !e.target.closest('.dropdown-content')) {
+            document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
+        }
+    }
+    function toggleDropdown(id) {
+        const el = document.getElementById(id);
+        const isShow = el.classList.contains('show');
+        document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
+        if (!isShow) el.classList.add('show');
+    }
+
+    // Carregamento Automático
+    window.onload = async function() {
+        const msg = document.getElementById('loadingMsg');
+        msg.style.display = 'block';
+        const cb = "?v=" + new Date().getTime(); 
+        try {
+            await fetchAutoFile('wm_order.xlsx' + cb, 'wm');
+            await fetchAutoFile('aging.xlsx' + cb, 'aging');
+        } catch (e) { 
+            msg.innerHTML = "Sincronização automática pendente. Carregue os arquivos manualmente se necessário.";
+        }
     };
 
-    async function carregar(url, type) {
+    async function fetchAutoFile(url, type) {
         try {
             const res = await fetch(url);
-            if (res.ok) processar(await res.arrayBuffer(), type);
-        } catch (e) { console.error("Falha auto-load:", type); }
+            if (!res.ok) throw new Error();
+            const buf = await res.arrayBuffer();
+            processExcel(buf, type);
+        } catch(e) {}
     }
 
-    function bind(box, input, type) {
-        document.getElementById(box).onclick = () => document.getElementById(input).click();
-        document.getElementById(input).onchange = e => {
-            const reader = new FileReader();
-            reader.onload = ev => processar(ev.target.result, type);
-            reader.readAsArrayBuffer(e.target.files[0]);
-        };
-    }
-    bind('boxAging', 'inAging', 'aging'); bind('boxWm', 'inWm', 'wm'); bind('boxExtra', 'inExtra', 'extra');
+    // Upload Manual
+    document.getElementById('boxAging').onclick = () => document.getElementById('inAging').click();
+    document.getElementById('boxWm').onclick = () => document.getElementById('inWm').click();
+    document.getElementById('inAging').onchange = e => lerArquivo(e, 'aging');
+    document.getElementById('inWm').onchange = e => lerArquivo(e, 'wm');
 
-    function processar(buf, type) {
-        try {
-            const wb = XLSX.read(buf);
-            const raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-            // Limpa nomes de colunas
-            const cleanJson = raw.map(row => {
-                let newRow = {};
-                for (let key in row) { newRow[key.trim().toLowerCase()] = row[key]; }
-                return newRow;
-            });
-
-            if (type === 'extra') {
-                cleanJson.forEach(r => { let p = r['protocolo man'] || r['protocolo']; if(p) dbExtra[String(p).trim()] = r['minhas observações'] || ''; });
-                document.getElementById('txtExtra').innerText = "✅ Notas Unidas";
-            } else {
-                if(type === 'aging') { dbAging = cleanJson; document.getElementById('boxAging').classList.add('done'); document.getElementById('txtAging').innerText="✅ Aging OK"; }
-                if(type === 'wm') { dbWm = cleanJson; document.getElementById('boxWm').classList.add('done'); document.getElementById('txtWm').innerText="✅ WM OK"; }
-            }
-            if(dbAging && dbWm) compilar();
-        } catch (err) { mostrarErro("Erro ao processar " + type + ". Verifique o arquivo."); }
+    function lerArquivo(e, type) {
+        const reader = new FileReader();
+        reader.onload = ev => processExcel(ev.target.result, type);
+        reader.readAsArrayBuffer(e.target.files[0]);
     }
 
-    function compilar() {
+    function processExcel(buf, type) {
+        const wb = XLSX.read(buf);
+        const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        if (type === 'aging') {
+            agingBase = json;
+            document.getElementById('boxAging').style.background = "#e6f4ea";
+            document.getElementById('txtAging').innerText = "✅ Aging Carregado";
+        } else {
+            wmBase = json;
+            document.getElementById('boxWm').style.background = "#e6f4ea";
+            document.getElementById('txtWm').innerText = "✅ WM Order Carregado";
+        }
+        if (agingBase && wmBase) processarTudo();
+    }
+
+    function processarTudo() {
         const wmMap = {};
-        dbWm.forEach(r => { if(r['protocolo pai']) wmMap[String(r['protocolo pai']).trim()] = r; });
-        finalData = [];
+        wmBase.forEach(r => { if (r['Protocolo pai']) wmMap[r['Protocolo pai']] = r; });
         const hoje = new Date();
+        dataFinal = [];
 
-        dbAging.forEach(row => {
-            const prot = String(row['protocolo'] || "").trim();
-            const site = String(row['site'] || "").toUpperCase();
-            
-            if (prot.startsWith("MAN") && site === 'EG') {
+        agingBase.forEach(row => {
+            const prot = String(row['protocolo'] || row['Protocolo'] || "");
+            const site = String(row['site'] || row['Site'] || "").toUpperCase();
+            if (prot.toUpperCase().startsWith("MAN") && site === 'EG') {
                 const wm = wmMap[prot] || {};
-                const dtRaw = row['dt criação'] || row['dt creation'] || row['data criação'];
+                const dtRaw = row['dt criação'] || row['Dt Criação'];
                 let dt = new Date((dtRaw - 25569) * 86400 * 1000);
-                if(isNaN(dt.getTime())) dt = new Date(dtRaw);
-                const dias = Math.max(0, Math.floor((hoje - dt) / 86400000));
+                if (isNaN(dt.getTime())) dt = new Date(dtRaw);
+                const dias = Math.max(0, Math.floor((hoje - dt) / (1000 * 60 * 60 * 24)));
                 
-                const ofi = String(wm['oficina'] || 'N/A');
-                finalData.push({
-                    pai: prot, wo: wm['protocolo'] || '-', aging: dias,
-                    oficina: ofi, gestor: getG(ofi), estado: wm['estado'] || 'N/A',
-                    wm_obs: wm['anotações de trabalho'] || '', minha_obs: dbExtra[prot] || ''
+                const oficina = wm['Oficina'] || 'N/A';
+                dataFinal.push({
+                    pai: prot, wo: wm['Protocolo'] || '-', aging: dias, site: site,
+                    oficina: oficina, gestor: definirGestor(oficina),
+                    solicitante: wm['Solicitante'] || '-', local: wm['Local'] || '-', estado: wm['Estado'] || 'N/A'
                 });
             }
         });
 
-        if(finalData.length === 0) {
-            mostrarErro("Nenhum dado 'MAN' com site 'EG' encontrado.");
-            return;
-        }
-
-        document.getElementById('errorLog').style.display = 'none';
-        filterSel.gestores = [...new Set(finalData.map(d => d.gestor))];
-        filterSel.oficinas = [...new Set(finalData.map(d => d.oficina))];
-        filterSel.estados = [...new Set(finalData.map(d => d.estado))];
+        // Inicializa seleções com tudo marcado
+        selecoes.gestores = [...new Set(dataFinal.map(d => d.gestor))];
+        selecoes.oficinas = [...new Set(dataFinal.map(d => d.oficina))];
+        selecoes.estados = [...new Set(dataFinal.map(d => d.estado))];
 
         document.getElementById('nav-dash').style.display = 'block';
+        document.getElementById('loadingMsg').style.display = 'none';
         switchPage('dashboard');
-        filtrar();
+        aplicarFiltros();
     }
 
-    function getG(o) {
-        o = o.toUpperCase();
+    function definirGestor(of) {
+        const o = String(of || "").toUpperCase();
         if (o.includes("MEC") || o.includes("REFRIG")) return "Sérgio";
-        if (o.includes("ELÉTR") || o.includes("ELETRO")) return "Leonardo";
-        if (o.includes("CIVIL") || o.includes("PINTU") || o.includes("PEDREIRO")) return "Thamiris";
+        if (o.includes("ELÉTR") || o.includes("ELETRIC") || o.includes("ELETRO")) return "Leonardo";
+        if (o.includes("CIVIL") || o.includes("SERRA") || o.includes("MARCE") || o.includes("PEDREIRO") || o.includes("PINTU")) return "Thamiris";
         return "Outros";
     }
 
-    function filtrar() {
-        const b = document.getElementById('busca').value.toUpperCase();
-        const lista = finalData.filter(d => 
-            filterSel.gestores.includes(d.gestor) && filterSel.oficinas.includes(d.oficina) && 
-            filterSel.estados.includes(d.estado) && (d.pai.includes(b) || d.wo.includes(b))
-        );
-        renderCheck('listGestor', [...new Set(finalData.map(d => d.gestor))], 'gestores');
-        renderCheck('listOficina', [...new Set(finalData.map(d => d.oficina))], 'oficinas');
-        renderCheck('listEstado', [...new Set(finalData.map(d => d.estado))], 'estados');
-        updateDash(lista);
+    function switchPage(p) {
+        document.querySelectorAll('.page, .nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById('page-'+p).classList.add('active');
+        document.getElementById('nav-'+p).classList.add('active');
     }
 
-    function updateDash(lista) {
+    function aplicarFiltros() {
+        const busca = document.getElementById('buscaWO').value.toUpperCase();
+        const faixas = [...document.querySelectorAll('#faixaChecklist input:checked')].map(cb => cb.value);
+
+        const filtrados = dataFinal.filter(d => {
+            const mGestor = selecoes.gestores.includes(d.gestor);
+            const mOficina = selecoes.oficinas.includes(d.oficina);
+            const mEstado = selecoes.estados.includes(d.estado);
+            const mBusca = d.wo.toUpperCase().includes(busca) || d.pai.toUpperCase().includes(busca) || d.solicitante.toUpperCase().includes(busca);
+            let mFaixa = false;
+            if (faixas.includes("30-74") && d.aging >= 30 && d.aging <= 74) mFaixa = true;
+            if (faixas.includes("75+") && d.aging >= 75) mFaixa = true;
+            return mGestor && mOficina && mEstado && mBusca && mFaixa;
+        });
+
+        renderChecklists(filtrados);
+        updateUI(filtrados);
+    }
+
+    function renderChecklists(dadosFiltrados) {
+        // Geramos as opções com base no que existe no banco TOTAL, 
+        // mas marcamos o que está na variável 'selecoes'
+        atualizarLista('gestorChecklist', [...new Set(dataFinal.map(d => d.gestor))], 'gestores');
+        atualizarLista('oficinaChecklist', [...new Set(dataFinal.map(d => d.oficina))], 'oficinas');
+        atualizarLista('estadoChecklist', [...new Set(dataFinal.map(d => d.estado))], 'estados');
+    }
+
+    function atualizarLista(id, itens, chave) {
+        const container = document.getElementById(id);
+        container.innerHTML = itens.sort().map(item => `
+            <label class="checkbox-item">
+                <input type="checkbox" value="${item}" ${selecoes[chave].includes(item) ? 'checked' : ''} 
+                onchange="vincularSelecao('${chave}', this)"> ${item}
+            </label>
+        `).join('');
+    }
+
+    function vincularSelecao(chave, el) {
+        if (el.checked) {
+            if (!selecoes[chave].includes(el.value)) selecoes[chave].push(el.value);
+        } else {
+            selecoes[chave] = selecoes[chave].filter(v => v !== el.value);
+        }
+        aplicarFiltros();
+    }
+
+    function toggleAll(id, status) {
+        const chave = id.replace('Checklist', 'es'); // Ajuste simples para bater com a chave (gestores, oficinas, estados)
+        const itens = [...new Set(dataFinal.map(d => d[id.replace('Checklist', '')]))];
+        selecoes[chave] = status ? [...itens] : [];
+        aplicarFiltros();
+    }
+
+    function updateUI(lista) {
         // KPIs
-        const res = lista.reduce((acc, c) => { acc[c.oficina] = (acc[c.oficina] || 0) + 1; return acc; }, {});
+        const resumo = lista.reduce((acc, cur) => { acc[cur.oficina] = (acc[cur.oficina] || 0) + 1; return acc; }, {});
         document.getElementById('kpiContainer').innerHTML = `<div class="card total-card"><h3>TOTAL MAN (EG)</h3><p>${lista.length}</p></div>` + 
-            Object.entries(res).sort((a,b)=>b[1]-a[1]).map(([o, q])=>`<div class="card"><h3>${o}</h3><p>${q}</p></div>`).join('');
+            Object.entries(resumo).sort((a,b) => b[1]-a[1]).map(([of, q]) => `<div class="card"><h3>${of}</h3><p>${q}</p></div>`).join('');
 
         // Tabela
-        document.getElementById('tbody').innerHTML = lista.map(d => `<tr><td><b>${d.pai}</b></td><td>${d.wo}</td><td style="color:${d.aging>=75?'red':'black'}; font-weight:bold">${d.aging}d</td><td>${d.oficina}</td><td>${d.gestor}</td><td>${d.estado}</td><td style="font-size:10px; color:#666">${d.wm_obs}</td><td><input type="text" class="input-obs" value="${d.minha_obs}" onchange="salvar('${d.pai}', this.value)"></td></tr>`).join('');
+        document.getElementById('tableBody').innerHTML = lista.map(d => `
+            <tr><td><b>${d.pai}</b></td><td><span style="background:#fff0f0;padding:2px 5px;border-radius:4px;">${d.wo}</span></td>
+            <td style="font-weight:bold;color:${d.aging>=75?'red':'inherit'}">${d.aging}d</td><td>${d.site}</td>
+            <td>${d.oficina}</td><td>${d.solicitante}</td><td>${d.local}</td><td>${d.estado}</td></tr>
+        `).join('');
 
-        // Gráfico Decrescente
+        // Gráfico
         const ctg = lista.reduce((acc, cur) => { const l = cur.aging + " d"; acc[l] = (acc[l] || 0) + 1; return acc; }, {});
-        const labels = Object.keys(ctg).sort((a,b) => parseInt(b) - parseInt(a));
-        if (chartObj) chartObj.destroy();
-        chartObj = new Chart(document.getElementById('canvasChart'), {
+        const lbls = Object.keys(ctg).sort((a,b) => parseInt(a) - parseInt(b));
+        if (chartInstance) chartInstance.destroy();
+        chartInstance = new Chart(document.getElementById('canvasChart'), {
             type: 'bar',
-            data: { labels: labels, datasets: [{ data: labels.map(l => ctg[l]), backgroundColor: '#6A0304', borderRadius: 5 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: false, datalabels: { display: true, anchor: 'end', align: 'top', color: '#6A0304', font: { weight: 'bold' } } }, scales: { y: { display: false }, x: { grid: { display: false } } } },
-            plugins: [ChartDataLabels]
+            data: { labels: lbls, datasets: [{ data: lbls.map(l => ctg[l]), backgroundColor: '#6A0304', borderRadius: 5 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: false, datalabels: { display: true, anchor: 'end', align: 'top', color: '#6A0304', font: { weight: 'bold' } } }, scales: { y: { display: false }, x: { grid: { display: false } } } }
         });
     }
 
-    function renderCheck(id, itens, chave) {
-        document.getElementById(id).innerHTML = itens.sort().map(i => `<label style="display:block; padding:4px;"><input type="checkbox" value="${i}" ${filterSel[chave].includes(i)?'checked':''} onchange="sync('${chave}', this)"> ${i}</label>`).join('');
-    }
+    function exportarExcel() {
+        const busca = document.getElementById('buscaWO').value.toUpperCase();
+        const faixas = [...document.querySelectorAll('#faixaChecklist input:checked')].map(cb => cb.value);
 
-    function sync(c, el) { if(el.checked) { if(!filterSel[c].includes(el.value)) filterSel[c].push(el.value); } else { filterSel[c] = filterSel[c].filter(v => v !== el.value); } filtrar(); }
-    function salvar(p, v) { const i = finalData.find(d => d.pai === p); if(i) i.minha_obs = v; }
-    function toggleDropdown(id) { document.querySelectorAll('.dropdown').forEach(d => d.id === id ? d.classList.toggle('show') : d.classList.remove('show')); }
-    function switchPage(p) { document.querySelectorAll('.page, .nav-item').forEach(e => e.classList.remove('active')); document.getElementById('page-'+p).classList.add('active'); document.getElementById('nav-'+p).classList.add('active'); }
-    function mostrarErro(m) { const e = document.getElementById('errorLog'); e.innerText = m; e.style.display = 'block'; }
-    function exportar() {
-        const ws = XLSX.utils.json_to_sheet(finalData.map(d => ({ "Protocolo MAN": d.pai, "WO": d.wo, "Aging": d.aging, "Oficina": d.oficina, "Gestor": d.gestor, "Estado": d.estado, "Obs Sistema": d.wm_obs, "Minhas Observações": d.minha_obs })));
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Aging"); XLSX.writeFile(wb, "Relatorio_Aging_EG.xlsx");
+        const filtrados = dataFinal.filter(d => {
+            return selecoes.gestores.includes(d.gestor) &&
+                   selecoes.oficinas.includes(d.oficina) &&
+                   selecoes.estados.includes(d.estado) &&
+                   (d.wo.toUpperCase().includes(busca) || d.pai.toUpperCase().includes(busca) || d.solicitante.toUpperCase().includes(busca)) &&
+                   ((faixas.includes("30-74") && d.aging >= 30 && d.aging <= 74) || (faixas.includes("75+") && d.aging >= 75));
+        });
+
+        if (filtrados.length === 0) {
+            alert("Não há dados para exportar com os filtros atuais.");
+            return;
+        }
+
+        // Formata os dados para o Excel
+        const dadosExcel = filtrados.map(d => ({
+            "Protocolo": d.pai,
+            "WO": d.wo,
+            "Aging": d.aging,
+            "Site": d.site,
+            "Oficina": d.oficina,
+            "Gestor": d.gestor,
+            "Solicitante": d.solicitante,
+            "Local": d.local,
+            "Estado": d.estado
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(dadosExcel);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Aging_Filtrado");
+        XLSX.writeFile(wb, "Relatorio_Aging_EG.xlsx");
     }
-    window.onclick = e => { if(!e.target.matches('.dropbtn') && !e.target.closest('.dropdown-content')) document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show')); };
 </script>
 </body>
 </html>
