@@ -33,7 +33,7 @@
         .nav-item.active { color: #fff; border-bottom: 5px solid #fff; }
         .logo-container img { height: 90px; width: auto; display: block; }
 
-        .container { max-width: 1750px; margin: 20px auto; padding: 0 20px; }
+        .container { max-width: 1850px; margin: 20px auto; padding: 0 20px; }
         .page { display: none; }
         .page.active { display: block; }
 
@@ -77,7 +77,7 @@
         input[type="text"] { padding: 10px; border: 1px solid #dadce0; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; height: 40px; }
         
         .table-container { background: var(--white); border-radius: 0 0 8px 8px; overflow: auto; box-shadow: 0 1px 2px rgba(0,0,0,0.1); max-height: 600px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1800px; } 
+        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 2000px; } 
         th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #eee; position: sticky; top: 0; color: var(--primary); z-index: 10; }
         td { padding: 10px; border-bottom: 1px solid #f1f3f4; }
         .btn-export { background: var(--success); color: white; border: none; padding: 0 20px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 40px; margin-left: auto; }
@@ -184,6 +184,7 @@
                         <th>Aberto em</th>
                         <th>Aging</th>
                         <th>Oficina</th>
+                        <th>Descrição Resumida</th>
                         <th>Estado</th>
                         <th>Anotações de Trabalho</th>
                         <th>Operações Prediais</th>
@@ -305,6 +306,7 @@
                 if (isNaN(dt.getTime())) dt = new Date(dtRaw);
                 const dias = Math.max(0, Math.floor((hoje - dt) / (1000 * 60 * 60 * 24)));
                 
+                // Atribuído e Op Prediais da planilha AGING
                 const opPrediais = row['Operações Prediais'] || row['operações prediais'] || row['Operacoes Prediais'] || row['operacoes prediais'] || '-';
                 const atrib = row['Atribuído'] || row['atribuído'] || row['Atribuido'] || row['atribuido'] || '-';
 
@@ -315,6 +317,7 @@
                     aging: dias, 
                     site: site,
                     oficina: wm['Oficina'] || 'N/A', 
+                    descResumida: wm['Descrição resumida'] || wm['Descricão resumida'] || wm['Descricao resumida'] || '-',
                     gestor: definirGestor(wm['Oficina']),
                     solicitante: wm['Solicitante'] || '-', 
                     local: wm['Local'] || '-', 
@@ -371,6 +374,7 @@
                        String(d.solicitante).toUpperCase().includes(busca) ||
                        String(d.anotacoes).toUpperCase().includes(busca) ||
                        String(d.atribuido).toUpperCase().includes(busca) ||
+                       String(d.descResumida).toUpperCase().includes(busca) ||
                        String(d.operacoes).toUpperCase().includes(busca);
         let mFaixa = false;
         faixas.forEach(f => {
@@ -419,10 +423,11 @@
                 <td>${d.abertoEm}</td>
                 <td style="font-weight:bold;color:${d.aging>=75?'red':'inherit'}">${d.aging}d</td>
                 <td>${d.oficina}</td>
+                <td style="font-size:10px;">${d.descResumida}</td>
                 <td>${d.estado}</td>
                 <td style="color:#666; font-size:10px;">${d.anotacoes.substring(0, 80)}${d.anotacoes.length > 80 ? '...' : ''}</td>
                 <td style="font-weight:500;">${d.operacoes}</td>
-                <td style="color:#202124;">${d.atribuido}</td>
+                <td style="color:#202124; font-weight:bold;">${d.atribuido}</td>
                 <td>${d.gestor}</td>
                 <td>${d.local}</td>
             </tr>
@@ -470,6 +475,7 @@
                 "Aberto em": d.abertoEm,
                 "Aging (Dias)": d.aging,
                 "Oficina": d.oficina,
+                "Descrição Resumida": d.descResumida,
                 "Estado": d.estado,
                 "Operações Prediais": d.operacoes,
                 "Atribuído": d.atribuido,
