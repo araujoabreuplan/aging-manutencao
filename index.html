@@ -274,7 +274,6 @@
     }
 
     function inicializarDados() {
-        // Mapeia WM_ORDER para pegar as anotações
         const wmMap = {};
         wmBase.forEach(r => { 
             const pPai = String(r['Protocolo pai'] || "").trim();
@@ -295,7 +294,10 @@
                 if (isNaN(dt.getTime())) dt = new Date(dtRaw);
                 const dias = Math.max(0, Math.floor((hoje - dt) / (1000 * 60 * 60 * 24)));
                 
-                // Pega Operações e Atribuído da AGING (row), Anotações da WM (wm)
+                // Busca agressiva: verifica variações de nomes de colunas na planilha AGING
+                const opPrediais = row['Operações Prediais'] || row['operações prediais'] || row['Operacoes Prediais'] || row['operacoes prediais'] || '-';
+                const atrib = row['Atribuído'] || row['atribuído'] || row['Atribuido'] || row['atribuido'] || '-';
+
                 dataFinal.push({
                     pai: prot, 
                     wo: wm['Protocolo'] || '-', 
@@ -307,8 +309,8 @@
                     local: wm['Local'] || '-', 
                     estado: wm['Estado'] || 'N/A',
                     anotacoes: wm['Anotações de trabalho'] || '',
-                    operacoes: row['Operações Prediais'] || row['operações prediais'] || '-', 
-                    atribuido: row['Atribuído'] || row['atribuído'] || '-' 
+                    operacoes: opPrediais, 
+                    atribuido: atrib 
                 });
             }
         });
@@ -357,7 +359,8 @@
                        String(d.pai).toUpperCase().includes(busca) || 
                        String(d.solicitante).toUpperCase().includes(busca) ||
                        String(d.anotacoes).toUpperCase().includes(busca) ||
-                       String(d.atribuido).toUpperCase().includes(busca);
+                       String(d.atribuido).toUpperCase().includes(busca) ||
+                       String(d.operacoes).toUpperCase().includes(busca);
         let mFaixa = false;
         faixas.forEach(f => {
             if (f === "30-74" && d.aging >= 30 && d.aging <= 74) mFaixa = true;
