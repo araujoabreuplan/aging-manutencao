@@ -6,68 +6,94 @@
     <title>Painel Aging MAN - EG - Araujo Abreu</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         :root { --primary: #6A0304; --bg: #f1f3f4; --white: #ffffff; --success: #34a853; --text: #3c4043; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: var(--bg); color: var(--text); }
-        .nav-bar { background: var(--primary); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; height: 110px; color: white; }
-        .nav-menu { display: flex; gap: 20px; }
-        .nav-item { cursor: pointer; padding: 10px 20px; text-transform: uppercase; font-weight: bold; opacity: 0.7; }
-        .nav-item.active { opacity: 1; border-bottom: 3px solid white; }
+        
+        .nav-bar { background: var(--primary); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; height: 110px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; }
+        .nav-menu { display: flex; align-items: center; height: 100%; }
+        .nav-item { padding: 0 25px; cursor: pointer; font-weight: 500; color: rgba(255,255,255,0.7); line-height: 110px; transition: 0.3s; text-transform: uppercase; }
+        .nav-item.active { color: #fff; border-bottom: 5px solid #fff; }
+        .logo-container img { height: 90px; width: auto; }
+
         .container { max-width: 1800px; margin: 20px auto; padding: 0 20px; }
         .page { display: none; }
         .page.active { display: block; }
-        
-        .upload-grid { display: flex; gap: 20px; margin-top: 20px; }
-        .upload-card { background: white; padding: 30px; border-radius: 12px; border: 2px dashed #ccc; text-align: center; cursor: pointer; flex: 1; }
-        .upload-card.done { border-color: var(--success); background: #f0fff4; border-style: solid; }
 
+        /* KPI Cards */
+        .kpi-container { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; }
+        .card { background: var(--white); padding: 15px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); text-align: center; border-top: 4px solid var(--primary); flex: 1; min-width: 150px; }
+        .card.total-card { border-top-color: #3c4043; background: #f8f9fa; }
+        .card h3 { margin: 0; font-size: 0.75em; color: #70757a; text-transform: uppercase; min-height: 35px; }
+        .card p { margin: 10px 0 0; font-size: 1.8em; font-weight: bold; color: var(--primary); }
+
+        /* Filtros */
         .filter-bar { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .dropdown { position: relative; }
-        .dropbtn { background: #f8f9fa; border: 1px solid #dadce0; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 11px; min-width: 140px; }
-        .dropdown-content { display: none; position: absolute; background: white; min-width: 250px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); z-index: 1100; border-radius: 8px; padding: 10px; }
+        .dropbtn { background: #f8f9fa; border: 1px solid #dadce0; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; min-width: 150px; text-align: left; }
+        .dropdown-content { display: none; position: absolute; background: white; min-width: 250px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); z-index: 1100; border-radius: 8px; padding: 10px; margin-top: 5px; }
         .dropdown.show .dropdown-content { display: block; }
+        .checkbox-list { max-height: 250px; overflow-y: auto; font-size: 11px; }
 
-        .table-container { background: white; border-radius: 8px; overflow: auto; max-height: 700px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        th { background: #f8f9fa; padding: 12px; text-align: left; position: sticky; top: 0; color: var(--primary); border-bottom: 2px solid #eee; }
-        td { padding: 8px; border-bottom: 1px solid #f1f3f4; }
-        .input-obs { width: 100%; border: 1px solid #ddd; padding: 4px; border-radius: 4px; }
-        .btn-export { background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-left: auto; }
+        /* Gráfico */
+        .chart-box { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; height: 350px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+
+        /* Tabela */
+        .table-container { background: white; border-radius: 8px; overflow: auto; max-height: 600px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1500px; }
+        th { background: #f8f9fa; padding: 12px; text-align: left; position: sticky; top: 0; color: var(--primary); z-index: 10; border-bottom: 2px solid #eee; }
+        td { padding: 10px; border-bottom: 1px solid #f1f3f4; }
+        
+        .input-obs { width: 100%; border: 1px solid #ddd; padding: 5px; border-radius: 4px; font-size: 11px; }
+        .btn-export { background: var(--success); color: white; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-left: auto; }
+        
+        .upload-card { background: white; padding: 40px; border-radius: 12px; border: 2px dashed #ccc; text-align: center; cursor: pointer; flex: 1; transition: 0.3s; }
+        .upload-card.done { border-color: var(--success); background: #f0fff4; border-style: solid; }
     </style>
 </head>
 <body>
 
 <div class="nav-bar">
     <div class="nav-menu">
-        <div id="nav-upload" class="nav-item active" onclick="switchPage('upload')">1. Configurar Arquivos</div>
-        <div id="nav-dash" class="nav-item" onclick="switchPage('dashboard')">2. Visualizar Painel</div>
+        <div id="nav-upload" class="nav-item active" onclick="switchPage('upload')">1. Arquivos</div>
+        <div id="nav-dash" class="nav-item" onclick="switchPage('dashboard')" style="display:none;">2. Painel Aging (EG)</div>
     </div>
-    <div class="logo-container"><img src="araujo_abreu_engenharia_logo.jpg" style="height:80px;"></div>
+    <div class="logo-container"><img src="araujo_abreu_engenharia_logo.jpg" alt="Logo"></div>
 </div>
 
 <div class="container">
     <div id="page-upload" class="page active">
-        <h2 id="statusTitle">Aguardando Sincronização...</h2>
-        <div class="upload-grid">
-            <div class="upload-card" id="boxAging"><strong>Aging MAN</strong><p id="txtAging">aging.xlsx</p><input type="file" id="inAging" hidden></div>
-            <div class="upload-card" id="boxWm"><strong>WM Order</strong><p id="txtWm">wm_order.xlsx</p><input type="file" id="inWm" hidden></div>
-            <div class="upload-card" id="boxExtra"><strong>Base de Notas (Opcional)</strong><p id="txtExtra">Clique para subir histórico</p><input type="file" id="inExtra" hidden></div>
+        <div style="display: flex; gap: 20px; margin-top: 40px;">
+            <div class="upload-card" id="boxAging"><strong>Aging MAN</strong><p id="txtAging">Carregar aging.xlsx</p><input type="file" id="inAging" hidden></div>
+            <div class="upload-card" id="boxWm"><strong>WM Order</strong><p id="txtWm">Carregar wm_order.xlsx</p><input type="file" id="inWm" hidden></div>
+            <div class="upload-card" id="boxExtra" style="border-style: dotted;"><strong>Opcional: Base de Notas</strong><p id="txtExtra">Cruzar Notas Anteriores</p><input type="file" id="inExtra" hidden></div>
         </div>
     </div>
 
     <div id="page-dashboard" class="page">
+        <div class="kpi-container" id="kpiContainer"></div>
+
         <div class="filter-bar">
             <div class="dropdown" id="dropGestor"><button class="dropbtn" onclick="toggleDropdown('dropGestor')">Gestores</button><div class="dropdown-content" id="listGestor"></div></div>
             <div class="dropdown" id="dropOficina"><button class="dropbtn" onclick="toggleDropdown('dropOficina')">Oficinas</button><div class="dropdown-content" id="listOficina"></div></div>
-            <input type="text" id="busca" placeholder="Buscar Protocolo..." onkeyup="filtrar()" style="padding:10px; border:1px solid #ddd; border-radius:6px; width:250px;">
-            <button class="btn-export" onclick="exportar()">Exportar com Notas</button>
+            <div class="dropdown" id="dropEstado"><button class="dropbtn" onclick="toggleDropdown('dropEstado')">Estados</button><div class="dropdown-content" id="listEstado"></div></div>
+            <input type="text" id="busca" placeholder="Buscar Protocolo ou WO..." onkeyup="filtrar()" style="padding:10px; border:1px solid #ddd; border-radius:6px; width:280px;">
+            <button class="btn-export" onclick="exportar()">Exportar Relatório Completo</button>
         </div>
+
+        <div class="chart-box"><canvas id="canvasChart"></canvas></div>
+
         <div class="table-container">
             <table>
                 <thead>
-                    <tr><th>Protocolo</th><th>WO</th><th>Aging</th><th>Oficina</th><th>Gestor</th><th>Estado</th><th>Anotações WM</th><th>Minhas Observações</th></tr>
+                    <tr>
+                        <th>Protocolo</th><th>WO</th><th>Aging</th><th>Oficina</th><th>Gestor</th><th>Estado</th>
+                        <th style="width: 200px;">Anotações (WM Order)</th>
+                        <th style="width: 250px;">Minhas Observações</th>
+                    </tr>
                 </thead>
                 <tbody id="tbody"></tbody>
             </table>
@@ -76,87 +102,44 @@
 </div>
 
 <script>
-    let dbAging = null, dbWm = null, dbExtra = {}, finalData = [];
-    let filterSel = { gestores: [], oficinas: [] };
+    let dbAging = null, dbWm = null, dbExtra = {}, finalData = [], chartObj = null;
+    let filterSel = { gestores: [], oficinas: [], estados: [] };
 
-    // Carregamento Automático ao Abrir
+    // Sincronização Automática
     window.onload = () => {
         const v = "?v=" + Date.now();
-        carregar('aging.xlsx' + v, 'aging');
-        carregar('wm_order.xlsx' + v, 'wm');
+        carregarAuto('aging.xlsx' + v, 'aging');
+        carregarAuto('wm_order.xlsx' + v, 'wm');
     };
 
-    async function carregar(url, type) {
+    async function carregarAuto(url, type) {
         try {
             const res = await fetch(url);
-            if (!res.ok) throw "Erro";
-            processar(await res.arrayBuffer(), type);
-        } catch (e) { console.warn("Arquivo automático não carregado:", url); }
+            if (res.ok) processarBuffer(await res.arrayBuffer(), type);
+        } catch (e) { console.log("Auto-load pendente para:", url); }
     }
 
-    // Handlers Manuais
-    document.getElementById('boxAging').onclick = () => document.getElementById('inAging').click();
-    document.getElementById('boxWm').onclick = () => document.getElementById('inWm').click();
-    document.getElementById('boxExtra').onclick = () => document.getElementById('inExtra').click();
-    document.getElementById('inAging').onchange = e => ler(e, 'aging');
-    document.getElementById('inWm').onchange = e => ler(e, 'wm');
-    document.getElementById('inExtra').onchange = e => ler(e, 'extra');
-
-    function ler(e, type) {
-        const reader = new FileReader();
-        reader.onload = ev => processar(ev.target.result, type);
-        reader.readAsArrayBuffer(e.target.files[0]);
+    // Uploads Manuais
+    function bind(box, input, type) {
+        document.getElementById(box).onclick = () => document.getElementById(input).click();
+        document.getElementById(input).onchange = e => {
+            const reader = new FileReader();
+            reader.onload = ev => processarBuffer(ev.target.result, type);
+            reader.readAsArrayBuffer(e.target.files[0]);
+        };
     }
+    bind('boxAging', 'inAging', 'aging'); bind('boxWm', 'inWm', 'wm'); bind('boxExtra', 'inExtra', 'extra');
 
-    function processar(buf, type) {
-        const sheet = XLSX.utils.sheet_to_json(XLSX.read(buf).Sheets[XLSX.read(buf).SheetNames[0]]);
+    function processarBuffer(buf, type) {
+        const json = XLSX.utils.sheet_to_json(XLSX.read(buf).Sheets[XLSX.read(buf).SheetNames[0]]);
         if (type === 'extra') {
-            sheet.forEach(r => {
-                let p = r['Protocolo MAN'] || r['Protocolo'] || r['protocolo'];
-                if(p) dbExtra[String(p).trim()] = r['Minhas Observações'] || r['Observações'] || '';
-            });
-            document.getElementById('txtExtra').innerText = "✅ Notas Aplicadas";
-            if(dbAging && dbWm) compilar(); // Recompila se já tiver os dados
-        } else {
-            if(type === 'aging') { dbAging = sheet; document.getElementById('boxAging').classList.add('done'); }
-            if(type === 'wm') { dbWm = sheet; document.getElementById('boxWm').classList.add('done'); }
+            json.forEach(r => { let p = r['Protocolo MAN'] || r['Protocolo']; if(p) dbExtra[String(p).trim()] = r['Minhas Observações'] || ''; });
+            document.getElementById('txtExtra').innerText = "✅ Notas Vinculadas";
             if(dbAging && dbWm) compilar();
-        }
-    }
-
-    function compilar() {
-        const wmMap = {};
-        dbWm.forEach(r => { if(r['Protocolo pai']) wmMap[String(r['Protocolo pai']).trim()] = r; });
-        
-        finalData = [];
-        const hoje = new Date();
-
-        dbAging.forEach(row => {
-            const prot = String(row['protocolo'] || row['Protocolo'] || "").trim();
-            const site = String(row['site'] || row['Site'] || "").toUpperCase();
-            
-            if (prot.startsWith("MAN") && site === 'EG') {
-                const wm = wmMap[prot] || {};
-                const dtRaw = row['dt criação'] || row['Dt Criação'];
-                let dt = new Date((dtRaw - 25569) * 86400 * 1000);
-                const dias = Math.max(0, Math.floor((hoje - (isNaN(dt.getTime()) ? new Date(dtRaw) : dt)) / 86400000));
-                
-                const oficina = wm['Oficina'] || 'N/A';
-                finalData.push({
-                    pai: prot, wo: wm['Protocolo'] || '-', aging: dias,
-                    oficina: oficina, gestor: getGestor(oficina),
-                    estado: wm['Estado'] || 'N/A',
-                    wm_obs: wm['Anotações de trabalho'] || '',
-                    minha_obs: dbExtra[prot] || ''
-                });
-            }
-        });
-
-        if(finalData.length > 0) {
-            filterSel.gestores = [...new Set(finalData.map(d => d.gestor))];
-            filterSel.oficinas = [...new Set(finalData.map(d => d.oficina))];
-            document.getElementById('statusTitle').innerText = "✅ Dados Sincronizados (" + finalData.length + " registros)";
-            filtrar();
+        } else {
+            if(type === 'aging') { dbAging = json; document.getElementById('boxAging').classList.add('done'); }
+            if(type === 'wm') { dbWm = json; document.getElementById('boxWm').classList.add('done'); }
+            if(dbAging && dbWm) compilar();
         }
     }
 
@@ -168,63 +151,120 @@
         return "Outros";
     }
 
+    function compilar() {
+        const wmMap = {};
+        dbWm.forEach(r => { if(r['Protocolo pai']) wmMap[String(r['Protocolo pai']).trim()] = r; });
+        finalData = [];
+        const hoje = new Date();
+
+        dbAging.forEach(row => {
+            const prot = String(row['protocolo'] || row['Protocolo'] || "").trim();
+            const site = String(row['site'] || row['Site'] || "").toUpperCase();
+            if (prot.startsWith("MAN") && site === 'EG') {
+                const wm = wmMap[prot] || {};
+                const dtRaw = row['dt creation'] || row['dt criação'] || row['Dt Criação'];
+                let dt = new Date((dtRaw - 25569) * 86400 * 1000);
+                const dias = Math.max(0, Math.floor((hoje - (isNaN(dt.getTime()) ? new Date(dtRaw) : dt)) / 86400000));
+                
+                finalData.push({
+                    pai: prot, wo: wm['Protocolo'] || '-', aging: dias,
+                    oficina: wm['Oficina'] || 'N/A', gestor: getGestor(wm['Oficina'] || 'N/A'),
+                    estado: wm['Estado'] || 'N/A',
+                    wm_obs: wm['Anotações de trabalho'] || '',
+                    minha_obs: dbExtra[prot] || ''
+                });
+            }
+        });
+
+        filterSel.gestores = [...new Set(finalData.map(d => d.gestor))];
+        filterSel.oficinas = [...new Set(finalData.map(d => d.oficina))];
+        filterSel.estados = [...new Set(finalData.map(d => d.estado))];
+
+        document.getElementById('nav-dash').style.display = 'block';
+        switchPage('dashboard');
+        filtrar();
+    }
+
     function filtrar() {
         const b = document.getElementById('busca').value.toUpperCase();
         const lista = finalData.filter(d => 
-            filterSel.gestores.includes(d.gestor) && 
-            filterSel.oficinas.includes(d.oficina) &&
-            (d.pai.includes(b) || d.wo.includes(b))
+            filterSel.gestores.includes(d.gestor) && filterSel.oficinas.includes(d.oficina) && 
+            filterSel.estados.includes(d.estado) && (d.pai.includes(b) || d.wo.includes(b))
         );
 
-        renderList('listGestor', [...new Set(finalData.map(d => d.gestor))], 'gestores');
-        renderList('listOficina', [...new Set(finalData.map(d => d.oficina))], 'oficinas');
+        renderCheck('listGestor', [...new Set(finalData.map(d => d.gestor))], 'gestores');
+        renderCheck('listOficina', [...new Set(finalData.map(d => d.oficina))], 'oficinas');
+        renderCheck('listEstado', [...new Set(finalData.map(d => d.estado))], 'estados');
 
+        updateKPIs(lista);
+        updateTable(lista);
+        updateChart(lista);
+    }
+
+    function updateKPIs(lista) {
+        const resumo = lista.reduce((acc, cur) => { acc[cur.oficina] = (acc[cur.oficina] || 0) + 1; return acc; }, {});
+        document.getElementById('kpiContainer').innerHTML = `<div class="card total-card"><h3>TOTAL MAN (EG)</h3><p>${lista.length}</p></div>` + 
+            Object.entries(resumo).sort((a,b) => b[1]-a[1]).map(([of, q]) => `<div class="card"><h3>${of}</h3><p>${q}</p></div>`).join('');
+    }
+
+    function updateTable(lista) {
         document.getElementById('tbody').innerHTML = lista.map(d => `
             <tr>
-                <td><b>${d.pai}</b></td><td>${d.wo}</td><td>${d.aging}d</td>
+                <td><b>${d.pai}</b></td><td>${d.wo}</td>
+                <td style="color:${d.aging>=75?'red':'black'}; font-weight:bold">${d.aging}d</td>
                 <td>${d.oficina}</td><td>${d.gestor}</td><td>${d.estado}</td>
-                <td style="font-size:9px; color:#666">${d.wm_obs}</td>
-                <td><input type="text" class="input-obs" value="${d.minha_obs}" onchange="salvarNota('${d.pai}', this.value)"></td>
+                <td style="font-size:10px; color:#666">${d.wm_obs}</td>
+                <td><input type="text" class="input-obs" value="${d.minha_obs}" onchange="salvar('${d.pai}', this.value)"></td>
             </tr>
         `).join('');
     }
 
-    function renderList(id, itens, chave) {
+    function updateChart(lista) {
+        const ctg = lista.reduce((acc, cur) => { const l = cur.aging + " d"; acc[l] = (acc[l] || 0) + 1; return acc; }, {});
+        
+        // Eixo X Decrescente: Ordena as chaves do maior número de dias para o menor
+        const labels = Object.keys(ctg).sort((a, b) => parseInt(b) - parseInt(a));
+
+        if (chartObj) chartObj.destroy();
+        chartObj = new Chart(document.getElementById('canvasChart'), {
+            type: 'bar',
+            data: { labels: labels, datasets: [{ data: labels.map(l => ctg[l]), backgroundColor: '#6A0304', borderRadius: 5 }] },
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { 
+                    legend: false, 
+                    datalabels: { display: true, anchor: 'end', align: 'top', color: '#6A0304', font: { weight: 'bold' } } 
+                },
+                scales: { y: { display: false }, x: { grid: { display: false } } }
+            },
+            plugins: [ChartDataLabels]
+        });
+    }
+
+    function renderCheck(id, itens, chave) {
         document.getElementById(id).innerHTML = itens.sort().map(i => `
-            <label style="display:block; padding:5px;"><input type="checkbox" value="${i}" 
+            <label style="display:block; padding:4px;"><input type="checkbox" value="${i}" 
             ${filterSel[chave].includes(i)?'checked':''} onchange="sync('${chave}', this)"> ${i}</label>
         `).join('');
     }
 
     function sync(c, el) {
-        if(el.checked) filterSel[c].push(el.value);
-        else filterSel[c] = filterSel[c].filter(v => v !== el.value);
+        if(el.checked) filterSel[c].push(el.value); else filterSel[c] = filterSel[c].filter(v => v !== el.value);
         filtrar();
     }
 
-    function salvarNota(p, v) { 
-        const i = finalData.find(d => d.pai === p); 
-        if(i) i.minha_obs = v; 
-    }
-
-    function toggleDropdown(id) {
-        document.querySelectorAll('.dropdown').forEach(d => d.id === id ? d.classList.toggle('show') : d.classList.remove('show'));
-    }
-
-    function switchPage(p) {
-        document.querySelectorAll('.page, .nav-item').forEach(e => e.classList.remove('active'));
-        document.getElementById('page-'+p).classList.add('active');
-        document.getElementById('nav-'+p).classList.add('active');
-    }
+    function salvar(p, v) { const i = finalData.find(d => d.pai === p); if(i) i.minha_obs = v; }
+    function toggleDropdown(id) { document.querySelectorAll('.dropdown').forEach(d => d.id === id ? d.classList.toggle('show') : d.classList.remove('show')); }
+    function switchPage(p) { document.querySelectorAll('.page, .nav-item').forEach(e => e.classList.remove('active')); document.getElementById('page-'+p).classList.add('active'); document.getElementById('nav-'+p).classList.add('active'); }
 
     function exportar() {
         const ws = XLSX.utils.json_to_sheet(finalData.map(d => ({
             "Protocolo MAN": d.pai, "WO": d.wo, "Aging": d.aging, "Oficina": d.oficina,
-            "Gestor": d.gestor, "Estado": d.estado, "Obs Sistema": d.wm_obs, "Minhas Observações": d.minha_obs
+            "Gestor": d.gestor, "Estado": d.estado, "Anotações WM": d.wm_obs, "Minhas Observações": d.minha_obs
         })));
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Relatorio");
-        XLSX.writeFile(wb, "Aging_Com_Notas_EG.xlsx");
+        XLSX.utils.book_append_sheet(wb, ws, "Aging_EG");
+        XLSX.writeFile(wb, "Painel_Aging_EG_Completo.xlsx");
     }
 
     window.onclick = e => { if(!e.target.matches('.dropbtn') && !e.target.closest('.dropdown-content')) document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show')); };
