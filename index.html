@@ -33,7 +33,7 @@
         .nav-item.active { color: #fff; border-bottom: 5px solid #fff; }
         .logo-container img { height: 90px; width: auto; display: block; }
 
-        .container { max-width: 1600px; margin: 20px auto; padding: 0 20px; }
+        .container { max-width: 1750px; margin: 20px auto; padding: 0 20px; }
         .page { display: none; }
         .page.active { display: block; }
 
@@ -77,7 +77,7 @@
         input[type="text"] { padding: 10px; border: 1px solid #dadce0; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; height: 40px; }
         
         .table-container { background: var(--white); border-radius: 0 0 8px 8px; overflow: auto; box-shadow: 0 1px 2px rgba(0,0,0,0.1); max-height: 600px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1400px; } 
+        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1700px; } 
         th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #eee; position: sticky; top: 0; color: var(--primary); z-index: 10; }
         td { padding: 10px; border-bottom: 1px solid #f1f3f4; }
         .btn-export { background: var(--success); color: white; border: none; padding: 0 20px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 40px; margin-left: auto; }
@@ -184,6 +184,8 @@
                         <th>Oficina</th>
                         <th>Estado</th>
                         <th>Anotações de Trabalho</th>
+                        <th>Operações Prediais</th>
+                        <th>Atribuído</th>
                         <th>Gestor</th>
                         <th>Local</th>
                     </tr>
@@ -302,7 +304,9 @@
                     solicitante: wm['Solicitante'] || '-', 
                     local: wm['Local'] || '-', 
                     estado: wm['Estado'] || 'N/A',
-                    anotacoes: wm['Anotações de trabalho'] || '' // Merge realizado aqui
+                    anotacoes: wm['Anotações de trabalho'] || '',
+                    operacoes: wm['Operações Prediais'] || '-', // Nova Coluna
+                    atribuido: wm['Atribuído'] || '-' // Nova Coluna
                 });
             }
         });
@@ -350,7 +354,8 @@
         const mBusca = String(d.wo).toUpperCase().includes(busca) || 
                        String(d.pai).toUpperCase().includes(busca) || 
                        String(d.solicitante).toUpperCase().includes(busca) ||
-                       String(d.anotacoes).toUpperCase().includes(busca);
+                       String(d.anotacoes).toUpperCase().includes(busca) ||
+                       String(d.atribuido).toUpperCase().includes(busca);
         let mFaixa = false;
         faixas.forEach(f => {
             if (f === "30-74" && d.aging >= 30 && d.aging <= 74) mFaixa = true;
@@ -397,15 +402,16 @@
                 <td style="font-weight:bold;color:${d.aging>=75?'red':'inherit'}">${d.aging}d</td>
                 <td>${d.oficina}</td>
                 <td>${d.estado}</td>
-                <td style="color:#666; font-size:10px;">${d.anotacoes.substring(0, 100)}${d.anotacoes.length > 100 ? '...' : ''}</td>
+                <td style="color:#666; font-size:10px;">${d.anotacoes.substring(0, 80)}${d.anotacoes.length > 80 ? '...' : ''}</td>
+                <td style="font-weight:500;">${d.operacoes}</td>
+                <td style="color:#202124;">${d.atribuido}</td>
                 <td>${d.gestor}</td>
                 <td>${d.local}</td>
             </tr>
         `).join('');
 
-        // Organização Decrescente do Eixo X
         const ctg = lista.reduce((acc, cur) => { const l = cur.aging + " d"; acc[l] = (acc[l] || 0) + 1; return acc; }, {});
-        const lbls = Object.keys(ctg).sort((a,b) => parseInt(b) - parseInt(a)); // Mudança para decrescente
+        const lbls = Object.keys(ctg).sort((a,b) => parseInt(b) - parseInt(a));
 
         if (chartInstance) chartInstance.destroy();
         chartInstance = new Chart(document.getElementById('canvasChart'), {
@@ -436,17 +442,18 @@
             );
 
             if (filtrados.length === 0) {
-                alert("Não há dados para exportar com os filtros atuais.");
+                alert("Não há dados para exportar.");
                 return;
             }
 
-            // Formatação amigável para Excel
             const dadosExcel = filtrados.map(d => ({
                 "Protocolo": d.pai,
                 "WO": d.wo,
                 "Aging (Dias)": d.aging,
                 "Oficina": d.oficina,
                 "Estado": d.estado,
+                "Operações Prediais": d.operacoes,
+                "Atribuído": d.atribuido,
                 "Gestor": d.gestor,
                 "Solicitante": d.solicitante,
                 "Local": d.local,
@@ -456,10 +463,10 @@
             const ws = XLSX.utils.json_to_sheet(dadosExcel);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Painel Aging EG");
-            XLSX.writeFile(wb, "Painel_Aging_EG_Export.xlsx");
+            XLSX.writeFile(wb, "Painel_Aging_EG_Completo.xlsx");
         } catch (e) {
             console.error(e);
-            alert("Erro ao exportar Excel. Verifique o console.");
+            alert("Erro ao exportar Excel.");
         }
     }
 </script>
