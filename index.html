@@ -72,11 +72,12 @@
         .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 11px; margin-bottom: 4px; cursor: pointer; padding: 3px; border-radius: 4px; }
         .checkbox-item:hover { background: #f1f3f4; }
 
+        .chart-wrapper { background: white; padding: 20px; border-radius: 8px; height: 350px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .search-bar-container { background: var(--white); padding: 15px 20px; border-radius: 8px 8px 0 0; border-bottom: 1px solid #eee; margin-top: 20px; }
         input[type="text"] { padding: 10px; border: 1px solid #dadce0; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; height: 40px; }
         
         .table-container { background: var(--white); border-radius: 0 0 8px 8px; overflow: auto; box-shadow: 0 1px 2px rgba(0,0,0,0.1); max-height: 600px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1200px; } 
+        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1400px; } 
         th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #eee; position: sticky; top: 0; color: var(--primary); z-index: 10; }
         td { padding: 10px; border-bottom: 1px solid #f1f3f4; }
         .btn-export { background: var(--success); color: white; border: none; padding: 0 20px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 40px; margin-left: auto; }
@@ -176,7 +177,16 @@
         <div class="table-container">
             <table>
                 <thead>
-                    <tr><th>Protocolo</th><th>WO</th><th>Aging</th><th>Site</th><th>Oficina</th><th>Solicitante</th><th>Local</th><th>Estado</th></tr>
+                    <tr>
+                        <th>Protocolo</th>
+                        <th>WO</th>
+                        <th>Aging</th>
+                        <th>Oficina</th>
+                        <th>Estado</th>
+                        <th>Anotações de Trabalho</th>
+                        <th>Gestor</th>
+                        <th>Local</th>
+                    </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
@@ -189,12 +199,12 @@
     let chartInstance = null;
     let selecoesAtuais = { gestores: [], oficinas: [], estados: [] };
 
-    // Gestão de Dropdowns
     window.onclick = function(e) {
         if (!e.target.matches('.dropbtn') && !e.target.closest('.dropdown-content')) {
             document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
         }
     }
+
     function toggleDropdown(id) {
         const el = document.getElementById(id);
         const isShow = el.classList.contains('show');
@@ -236,8 +246,15 @@
     setupUpload('boxWm', 'inWm', 'wm');
 
     function processExcelBuffer(buf, type) {
-        const json = XLSX.utils.sheet_to_json(XLSX.read(buf).Sheets[XLSX.read(buf).SheetNames[0]]);
-        if (type === 'aging') agingBase = json; else wmBase = json;
+        const workbook = XLSX.read(buf, {type: 'array'});
+        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+        if (type === 'aging') {
+            agingBase = json;
+            document.getElementById('txtAging').innerHTML = "✅ Arquivo Carregado";
+        } else {
+            wmBase = json;
+            document.getElementById('txtWm').innerHTML = "✅ Arquivo Carregado";
+        }
         if (agingBase && wmBase) {
             inicializarDados();
             document.getElementById('nav-dash').style.display = 'block';
@@ -256,28 +273,40 @@
 
     function inicializarDados() {
         const wmMap = {};
-        wmBase.forEach(r => { if (r['Protocolo pai']) wmMap[r['Protocolo pai']] = r; });
+        wmBase.forEach(r => { 
+            const pPai = String(r['Protocolo pai'] || "").trim();
+            if (pPai) wmMap[pPai] = r; 
+        });
+
         const hoje = new Date();
         dataFinal = [];
 
         agingBase.forEach(row => {
-            const prot = String(row['protocolo'] || row['Protocolo'] || "");
+            const prot = String(row['protocolo'] || row['Protocolo'] || "").trim();
             const site = String(row['site'] || row['Site'] || "").toUpperCase();
+            
             if (prot.toUpperCase().startsWith("MAN") && site === 'EG') {
                 const wm = wmMap[prot] || {};
                 const dtRaw = row['dt criação'] || row['Dt Criação'];
                 let dt = new Date((dtRaw - 25569) * 86400 * 1000);
                 if (isNaN(dt.getTime())) dt = new Date(dtRaw);
                 const dias = Math.max(0, Math.floor((hoje - dt) / (1000 * 60 * 60 * 24)));
+                
                 dataFinal.push({
-                    pai: prot, wo: wm['Protocolo'] || '-', aging: dias, site: site,
-                    oficina: wm['Oficina'] || 'N/A', gestor: definirGestor(wm['Oficina']),
-                    solicitante: wm['Solicitante'] || '-', local: wm['Local'] || '-', estado: wm['Estado'] || 'N/A'
+                    pai: prot, 
+                    wo: wm['Protocolo'] || '-', 
+                    aging: dias, 
+                    site: site,
+                    oficina: wm['Oficina'] || 'N/A', 
+                    gestor: definirGestor(wm['Oficina']),
+                    solicitante: wm['Solicitante'] || '-', 
+                    local: wm['Local'] || '-', 
+                    estado: wm['Estado'] || 'N/A',
+                    anotacoes: wm['Anotações de trabalho'] || '' // Merge realizado aqui
                 });
             }
         });
 
-        // Seleção inicial: Tudo marcado
         selecoesAtuais.gestores = [...new Set(dataFinal.map(d => d.gestor))];
         selecoesAtuais.oficinas = [...new Set(dataFinal.map(d => d.oficina))];
         selecoesAtuais.estados = [...new Set(dataFinal.map(d => d.estado))];
@@ -286,7 +315,6 @@
     }
 
     function renderizarChecklists() {
-        // 1. Descobrir o que existe ATUALMENTE com base nos outros filtros
         const busca = document.getElementById('buscaWO').value.toUpperCase();
         const selFaixas = [...document.querySelectorAll('#faixaChecklist input:checked')].map(cb => cb.value);
 
@@ -294,7 +322,6 @@
         const dadosParaOficina = dadosParaGestor.filter(d => selecoesAtuais.gestores.includes(d.gestor));
         const dadosParaEstado = dadosParaOficina.filter(d => selecoesAtuais.oficinas.includes(d.oficina));
 
-        // Atualiza Listas Visíveis
         atualizarChecklist('gestorChecklist', [...new Set(dadosParaGestor.map(d => d.gestor))], selecoesAtuais.gestores, 'gestores');
         atualizarChecklist('oficinaChecklist', [...new Set(dadosParaOficina.map(d => d.oficina))], selecoesAtuais.oficinas, 'oficinas');
         atualizarChecklist('estadoChecklist', [...new Set(dadosParaEstado.map(d => d.estado))], selecoesAtuais.estados, 'estados');
@@ -320,7 +347,10 @@
     }
 
     function filtrarPorFaixaEBusca(d, faixas, busca) {
-        const mBusca = d.wo.toUpperCase().includes(busca) || d.pai.toUpperCase().includes(busca) || d.solicitante.toUpperCase().includes(busca);
+        const mBusca = String(d.wo).toUpperCase().includes(busca) || 
+                       String(d.pai).toUpperCase().includes(busca) || 
+                       String(d.solicitante).toUpperCase().includes(busca) ||
+                       String(d.anotacoes).toUpperCase().includes(busca);
         let mFaixa = false;
         faixas.forEach(f => {
             if (f === "30-74" && d.aging >= 30 && d.aging <= 74) mFaixa = true;
@@ -351,7 +381,7 @@
                    filtrarPorFaixaEBusca(d, selFaixas, busca);
         });
 
-        renderizarChecklists(); // Atualiza as opções dos menus com base no novo cenário
+        renderizarChecklists();
         updateUI(filtrados);
     }
 
@@ -361,29 +391,76 @@
             Object.entries(resumo).sort((a,b) => b[1]-a[1]).map(([of, q]) => `<div class="card"><h3>${of}</h3><p>${q}</p></div>`).join('');
 
         document.getElementById('tableBody').innerHTML = lista.map(d => `
-            <tr><td><b>${d.pai}</b></td><td><span style="background:#fff0f0;padding:2px 5px;border-radius:4px;">${d.wo}</span></td>
-            <td style="font-weight:bold;color:${d.aging>=75?'red':'inherit'}">${d.aging}d</td><td>${d.site}</td>
-            <td>${d.oficina}</td><td>${d.solicitante}</td><td>${d.local}</td><td>${d.estado}</td></tr>
+            <tr>
+                <td><b>${d.pai}</b></td>
+                <td><span style="background:#fff0f0;padding:2px 5px;border-radius:4px;">${d.wo}</span></td>
+                <td style="font-weight:bold;color:${d.aging>=75?'red':'inherit'}">${d.aging}d</td>
+                <td>${d.oficina}</td>
+                <td>${d.estado}</td>
+                <td style="color:#666; font-size:10px;">${d.anotacoes.substring(0, 100)}${d.anotacoes.length > 100 ? '...' : ''}</td>
+                <td>${d.gestor}</td>
+                <td>${d.local}</td>
+            </tr>
         `).join('');
 
+        // Organização Decrescente do Eixo X
         const ctg = lista.reduce((acc, cur) => { const l = cur.aging + " d"; acc[l] = (acc[l] || 0) + 1; return acc; }, {});
-        const lbls = Object.keys(ctg).sort((a,b) => parseInt(a) - parseInt(b));
+        const lbls = Object.keys(ctg).sort((a,b) => parseInt(b) - parseInt(a)); // Mudança para decrescente
+
         if (chartInstance) chartInstance.destroy();
         chartInstance = new Chart(document.getElementById('canvasChart'), {
             type: 'bar',
             data: { labels: lbls, datasets: [{ data: lbls.map(l => ctg[l]), backgroundColor: '#6A0304', borderRadius: 5 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: false, datalabels: { display: true, anchor: 'end', align: 'top', color: '#6A0304', font: { weight: 'bold' } } }, scales: { y: { display: false }, x: { grid: { display: false } } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { 
+                    legend: false, 
+                    datalabels: { display: true, anchor: 'end', align: 'top', color: '#6A0304', font: { weight: 'bold' } } 
+                }, 
+                scales: { y: { display: false }, x: { grid: { display: false } } } 
+            },
+            plugins: [ChartDataLabels]
         });
     }
 
     function exportarExcel() {
-        const busca = document.getElementById('buscaWO').value.toUpperCase();
-        const selFaixas = [...document.querySelectorAll('#faixaChecklist input:checked')].map(cb => cb.value);
-        const filtrados = dataFinal.filter(d => 
-            selecoesAtuais.gestores.includes(d.gestor) && selecoesAtuais.oficinas.includes(d.oficina) && 
-            selecoesAtuais.estados.includes(d.estado) && filtrarPorFaixaEBusca(d, selFaixas, busca)
-        );
-        XLSX.writeFile(XLSX.utils.book_new(XLSX.utils.book_append_sheet(XLSX.utils.book_new(), XLSX.utils.json_to_sheet(filtrados), "Dados")), "Relatorio_Filtrado.xlsx");
+        try {
+            const busca = document.getElementById('buscaWO').value.toUpperCase();
+            const selFaixas = [...document.querySelectorAll('#faixaChecklist input:checked')].map(cb => cb.value);
+            const filtrados = dataFinal.filter(d => 
+                selecoesAtuais.gestores.includes(d.gestor) && 
+                selecoesAtuais.oficinas.includes(d.oficina) && 
+                selecoesAtuais.estados.includes(d.estado) && 
+                filtrarPorFaixaEBusca(d, selFaixas, busca)
+            );
+
+            if (filtrados.length === 0) {
+                alert("Não há dados para exportar com os filtros atuais.");
+                return;
+            }
+
+            // Formatação amigável para Excel
+            const dadosExcel = filtrados.map(d => ({
+                "Protocolo": d.pai,
+                "WO": d.wo,
+                "Aging (Dias)": d.aging,
+                "Oficina": d.oficina,
+                "Estado": d.estado,
+                "Gestor": d.gestor,
+                "Solicitante": d.solicitante,
+                "Local": d.local,
+                "Anotações": d.anotacoes
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(dadosExcel);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Painel Aging EG");
+            XLSX.writeFile(wb, "Painel_Aging_EG_Export.xlsx");
+        } catch (e) {
+            console.error(e);
+            alert("Erro ao exportar Excel. Verifique o console.");
+        }
     }
 </script>
 </body>
