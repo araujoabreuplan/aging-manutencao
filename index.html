@@ -268,7 +268,8 @@
     function definirGestor(oficina) {
         const of = String(oficina || "").toUpperCase();
         if (of.includes("MEC") || of.includes("REFRIG")) return "Sérgio";
-        if (of.includes("ELÉTR") || of.includes("ELETRO") || of.includes("ELETRIC")) return "Leonardo";
+        // Adicionado: Automação atribuída ao Leonardo
+        if (of.includes("ELÉTR") || of.includes("ELETRO") || of.includes("ELETRIC") || of.includes("AUTOMA")) return "Leonardo";
         if (of.includes("CIVIL") || of.includes("SERRA") || of.includes("MARCE") || of.includes("PEDREIRO") || of.includes("PINTU")) return "Thamiris";
         return "Outros";
     }
@@ -294,7 +295,6 @@
                 if (isNaN(dt.getTime())) dt = new Date(dtRaw);
                 const dias = Math.max(0, Math.floor((hoje - dt) / (1000 * 60 * 60 * 24)));
                 
-                // Busca agressiva: verifica variações de nomes de colunas na planilha AGING
                 const opPrediais = row['Operações Prediais'] || row['operações prediais'] || row['Operacoes Prediais'] || row['operacoes prediais'] || '-';
                 const atrib = row['Atribuído'] || row['atribuído'] || row['Atribuido'] || row['atribuido'] || '-';
 
