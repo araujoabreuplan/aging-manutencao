@@ -20,12 +20,9 @@
         }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: var(--bg); color: var(--text); }
         
-        /* Navbar */
         .nav-bar { 
             background: var(--primary); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
             position: sticky; top: 0; z-index: 1000; 
             padding: 0 30px; height: 110px; 
@@ -40,31 +37,29 @@
         .page { display: none; }
         .page.active { display: block; }
 
-        /* KPI Cards */
         .kpi-container { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; }
         .card { background: var(--white); padding: 15px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); text-align: center; border-top: 4px solid var(--primary); min-width: 140px; flex: 1; }
         .card.total-card { border-top-color: #3c4043; background: #f8f9fa; }
         .card h3 { margin: 0; font-size: 0.7em; color: #70757a; text-transform: uppercase; min-height: 30px; }
         .card p { margin: 10px 0 0; font-size: 1.6em; font-weight: bold; color: var(--primary); }
 
-        /* Filtros Suspensos */
         .filter-bar { 
             background: var(--white); padding: 15px; border-radius: 8px; margin-bottom: 15px; 
-            display: flex; gap: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); align-items: center; 
+            display: flex; gap: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); align-items: center; 
             flex-wrap: wrap;
         }
         
         .dropdown { position: relative; display: inline-block; }
         .dropbtn { 
-            background-color: #f8f9fa; color: var(--text); padding: 10px 15px; 
-            font-size: 12px; font-weight: bold; border: 1px solid #dadce0; 
-            border-radius: 6px; cursor: pointer; min-width: 160px; text-align: left;
+            background-color: #f8f9fa; color: var(--text); padding: 10px 12px; 
+            font-size: 11px; font-weight: bold; border: 1px solid #dadce0; 
+            border-radius: 6px; cursor: pointer; min-width: 140px; text-align: left;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .dropbtn:after { content: ' ▼'; font-size: 9px; color: #777; }
+        .dropbtn:after { content: ' ▼'; font-size: 8px; color: #777; }
         .dropdown-content { 
             display: none; position: absolute; background-color: white; 
-            min-width: 250px; box-shadow: 0px 8px 16px rgba(0,0,0,0.2); 
+            min-width: 260px; box-shadow: 0px 8px 16px rgba(0,0,0,0.2); 
             z-index: 1100; border-radius: 8px; padding: 12px; border: 1px solid #eee;
             margin-top: 5px;
         }
@@ -72,19 +67,11 @@
 
         .multi-select-controls { display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
         .multi-select-controls button { flex: 1; border: none; padding: 5px; font-size: 10px; cursor: pointer; background: #eee; border-radius: 4px; font-weight: bold; }
-        .multi-select-controls button:hover { background: #ddd; }
         
         .checkbox-list { max-height: 250px; overflow-y: auto; }
-        .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 6px; cursor: pointer; padding: 4px; border-radius: 4px; }
+        .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 11px; margin-bottom: 4px; cursor: pointer; padding: 3px; border-radius: 4px; }
         .checkbox-item:hover { background: #f1f3f4; }
-        .checkbox-item input { cursor: pointer; }
 
-        /* Estilo Geral */
-        .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 40px; }
-        .upload-box { background: var(--white); border: 3px dashed #dadce0; padding: 80px 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; }
-        .upload-box.done { border-color: var(--success); background: #e6f4ea; border-style: solid; }
-        
-        .chart-wrapper { background: var(--white); padding: 40px 20px 20px 20px; border-radius: 8px; height: 350px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .search-bar-container { background: var(--white); padding: 15px 20px; border-radius: 8px 8px 0 0; border-bottom: 1px solid #eee; margin-top: 20px; }
         input[type="text"] { padding: 10px; border: 1px solid #dadce0; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; height: 40px; }
         
@@ -92,10 +79,9 @@
         table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1200px; } 
         th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #eee; position: sticky; top: 0; color: var(--primary); z-index: 10; }
         td { padding: 10px; border-bottom: 1px solid #f1f3f4; }
-        .badge-wo { background: #fff0f0; color: var(--primary); padding: 2px 5px; border-radius: 4px; font-weight: bold; }
-        .btn-export { background: var(--success); color: white; border: none; padding: 0 25px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 40px; margin-left: auto; }
+        .btn-export { background: var(--success); color: white; border: none; padding: 0 20px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 40px; margin-left: auto; }
         
-        #loadingMsg { color: var(--primary); font-weight: bold; padding: 15px; background: #fff; border-radius: 8px; display: none; box-shadow: 0 1px 2px rgba(0,0,0,0.1); text-align: center;}
+        #loadingMsg { color: var(--primary); font-weight: bold; padding: 15px; background: #fff; border-radius: 8px; display: none; text-align: center;}
     </style>
 </head>
 <body>
@@ -113,15 +99,15 @@
 <div class="container">
     <div id="page-upload" class="page active">
         <div id="loadingMsg">⏳ Sincronizando dados com o GitHub...</div>
-        <div class="upload-grid">
-            <div class="upload-box" id="boxAging">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 40px;">
+            <div class="card" id="boxAging" style="padding: 50px; cursor: pointer; border: 2px dashed #ccc;">
                 <strong>Planilha Aging</strong>
-                <p id="txtAging">Aguardando arquivo 'aging.xlsx'...</p>
+                <p id="txtAging">Aguardando arquivo...</p>
                 <input type="file" id="inAging" hidden accept=".xlsx">
             </div>
-            <div class="upload-box" id="boxWm">
+            <div class="card" id="boxWm" style="padding: 50px; cursor: pointer; border: 2px dashed #ccc;">
                 <strong>Planilha wm_order</strong>
-                <p id="txtWm">Aguardando arquivo 'wm_order.xlsx'...</p>
+                <p id="txtWm">Aguardando arquivo...</p>
                 <input type="file" id="inWm" hidden accept=".xlsx">
             </div>
         </div>
@@ -131,8 +117,19 @@
         <div class="kpi-container" id="kpiContainer"></div>
         
         <div class="filter-bar">
+            <div class="dropdown" id="dropGestor">
+                <button class="dropbtn" onclick="toggleDropdown('dropGestor')">Filtrar Gestores</button>
+                <div class="dropdown-content">
+                    <div class="multi-select-controls">
+                        <button onclick="toggleAll('gestorChecklist', true)">Todos</button>
+                        <button onclick="toggleAll('gestorChecklist', false)">Limpar</button>
+                    </div>
+                    <div class="checkbox-list" id="gestorChecklist"></div>
+                </div>
+            </div>
+
             <div class="dropdown" id="dropOficina">
-                <button class="dropbtn" onclick="toggleDropdown('dropOficina')">Oficinas</button>
+                <button class="dropbtn" onclick="toggleDropdown('dropOficina')">Filtrar Oficinas</button>
                 <div class="dropdown-content">
                     <div class="multi-select-controls">
                         <button onclick="toggleAll('oficinaChecklist', true)">Todas</button>
@@ -142,24 +139,8 @@
                 </div>
             </div>
 
-            <div class="dropdown" id="dropGestor">
-                <button class="dropbtn" onclick="toggleDropdown('dropGestor')">Gestores</button>
-                <div class="dropdown-content">
-                    <div class="multi-select-controls">
-                        <button onclick="toggleAll('gestorChecklist', true)">Todos</button>
-                        <button onclick="toggleAll('gestorChecklist', false)">Limpar</button>
-                    </div>
-                    <div class="checkbox-list" id="gestorChecklist">
-                        <label class="checkbox-item"><input type="checkbox" value="Sérgio" checked onchange="aplicarFiltros()"> Sérgio</label>
-                        <label class="checkbox-item"><input type="checkbox" value="Leonardo" checked onchange="aplicarFiltros()"> Leonardo</label>
-                        <label class="checkbox-item"><input type="checkbox" value="Thamiris" checked onchange="aplicarFiltros()"> Thamiris</label>
-                        <label class="checkbox-item"><input type="checkbox" value="Outros" checked onchange="aplicarFiltros()"> Outros</label>
-                    </div>
-                </div>
-            </div>
-
             <div class="dropdown" id="dropEstado">
-                <button class="dropbtn" onclick="toggleDropdown('dropEstado')">Estados (Status)</button>
+                <button class="dropbtn" onclick="toggleDropdown('dropEstado')">Filtrar Estados</button>
                 <div class="dropdown-content">
                     <div class="multi-select-controls">
                         <button onclick="toggleAll('estadoChecklist', true)">Todos</button>
@@ -189,22 +170,13 @@
         <div class="chart-wrapper"><canvas id="canvasChart"></canvas></div>
 
         <div class="search-bar-container">
-            <input type="text" id="buscaWO" placeholder="Buscar Protocolo, WO ou Solicitante..." onkeyup="aplicarFiltros()">
+            <input type="text" id="buscaWO" placeholder="Busca rápida..." onkeyup="aplicarFiltros()">
         </div>
         
         <div class="table-container">
             <table>
                 <thead>
-                    <tr>
-                        <th>Protocolo MAN</th>
-                        <th>WO</th>
-                        <th>Aging</th>
-                        <th>Site</th>
-                        <th>Oficina</th>
-                        <th>Solicitante</th>
-                        <th>Local</th>
-                        <th>Estado</th>
-                    </tr>
+                    <tr><th>Protocolo</th><th>WO</th><th>Aging</th><th>Site</th><th>Oficina</th><th>Solicitante</th><th>Local</th><th>Estado</th></tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
@@ -215,15 +187,14 @@
 <script>
     let agingBase = null, wmBase = null, dataFinal = [];
     let chartInstance = null;
-    Chart.register(ChartDataLabels);
+    let selecoesAtuais = { gestores: [], oficinas: [], estados: [] };
 
-    // Fecha dropdowns se clicar fora
-    window.onclick = function(event) {
-        if (!event.target.matches('.dropbtn') && !event.target.closest('.dropdown-content')) {
+    // Gestão de Dropdowns
+    window.onclick = function(e) {
+        if (!e.target.matches('.dropbtn') && !e.target.closest('.dropdown-content')) {
             document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
         }
     }
-
     function toggleDropdown(id) {
         const el = document.getElementById(id);
         const isShow = el.classList.contains('show');
@@ -234,141 +205,153 @@
     window.onload = async function() {
         const msg = document.getElementById('loadingMsg');
         msg.style.display = 'block';
-        const cacheBuster = "?v=" + new Date().getTime(); 
+        const cb = "?v=" + new Date().getTime(); 
         try {
-            try { await fetchAutoFile('wm_order.xlsx' + cacheBuster, 'wm'); } catch(e) { await fetchAutoFile('Wm_order.xlsx' + cacheBuster, 'wm'); }
-            try { await fetchAutoFile('aging.xlsx' + cacheBuster, 'aging'); } catch(e) { await fetchAutoFile('Aging.xlsx' + cacheBuster, 'aging'); }
-        } catch (e) {
-            msg.innerHTML = "⚠️ Sincronização automática falhou. Use o upload manual.";
-            msg.style.color = "#d93025";
-        }
+            try { await fetchAutoFile('wm_order.xlsx' + cb, 'wm'); } catch(e) { await fetchAutoFile('Wm_order.xlsx' + cb, 'wm'); }
+            try { await fetchAutoFile('aging.xlsx' + cb, 'aging'); } catch(e) { await fetchAutoFile('Aging.xlsx' + cb, 'aging'); }
+        } catch (e) { msg.innerHTML = "⚠️ Falha na sincronização."; }
     };
 
     async function fetchAutoFile(url, type) {
         const res = await fetch(url);
-        if (!res.ok) throw new Error("Não encontrado");
-        const buf = await res.arrayBuffer();
-        processExcelBuffer(buf, type);
+        if (!res.ok) throw new Error();
+        processExcelBuffer(await res.arrayBuffer(), type);
     }
 
-    function switchPage(page) {
+    function switchPage(p) {
         document.querySelectorAll('.page, .nav-item').forEach(el => el.classList.remove('active'));
-        document.getElementById('page-' + page).classList.add('active');
-        document.getElementById('nav-' + page).classList.add('active');
+        document.getElementById('page-'+p).classList.add('active');
+        document.getElementById('nav-'+p).classList.add('active');
     }
 
-    function setupUploadEvents(boxId, inputId, type) {
-        const box = document.getElementById(boxId);
-        const input = document.getElementById(inputId);
-        box.addEventListener('click', () => input.click());
-        input.addEventListener('change', (e) => {
-            if (e.target.files.length) {
-                const reader = new FileReader();
-                reader.onload = (ev) => processExcelBuffer(ev.target.result, type);
-                reader.readAsArrayBuffer(e.target.files[0]);
-                document.getElementById('txt' + type.charAt(0).toUpperCase() + type.slice(1)).innerText = "✅ " + e.target.files[0].name;
-            }
-        });
+    function setupUpload(boxId, inputId, type) {
+        document.getElementById(boxId).onclick = () => document.getElementById(inputId).click();
+        document.getElementById(inputId).onchange = (e) => {
+            const reader = new FileReader();
+            reader.onload = (ev) => processExcelBuffer(ev.target.result, type);
+            reader.readAsArrayBuffer(e.target.files[0]);
+        };
     }
-    setupUploadEvents('boxAging', 'inAging', 'aging');
-    setupUploadEvents('boxWm', 'inWm', 'wm');
+    setupUpload('boxAging', 'inAging', 'aging');
+    setupUpload('boxWm', 'inWm', 'wm');
 
-    function processExcelBuffer(buffer, type) {
-        const workbook = XLSX.read(buffer);
-        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-        if (type === 'aging') { 
-            agingBase = json; 
-            document.getElementById('boxAging').classList.add('done');
-            document.getElementById('txtAging').innerText = "✅ Sincronizado";
-        } else { 
-            wmBase = json; 
-            document.getElementById('boxWm').classList.add('done');
-            document.getElementById('txtWm').innerText = "✅ Sincronizado";
-        }
-        if (agingBase && wmBase) { 
-            processData(); 
-            document.getElementById('nav-dash').style.display = 'block'; 
+    function processExcelBuffer(buf, type) {
+        const json = XLSX.utils.sheet_to_json(XLSX.read(buf).Sheets[XLSX.read(buf).SheetNames[0]]);
+        if (type === 'aging') agingBase = json; else wmBase = json;
+        if (agingBase && wmBase) {
+            inicializarDados();
+            document.getElementById('nav-dash').style.display = 'block';
             document.getElementById('loadingMsg').style.display = 'none';
-            switchPage('dashboard'); 
+            switchPage('dashboard');
         }
     }
 
     function definirGestor(oficina) {
-        if (!oficina) return "Outros";
-        const of = oficina.toUpperCase();
-        if (of.includes("MECÂNICA") || of.includes("REFRIGERAÇÃO") || of.includes("MECANICA") || of.includes("REFRIGERACAO")) return "Sérgio";
-        if (of.includes("ELÉTRICA") || of.includes("ELETRICA") || of.includes("ELETROELETRÔNICOS")) return "Leonardo";
-        if (of.includes("CIVIL") || of.includes("SERRALHERIA") || of.includes("MARCENARIA") || of.includes("PEDREIRO") || of.includes("PINTURA")) return "Thamiris";
+        const of = String(oficina || "").toUpperCase();
+        if (of.includes("MEC") || of.includes("REFRIG")) return "Sérgio";
+        if (of.includes("ELÉTR") || of.includes("ELETRO") || of.includes("ELETRIC")) return "Leonardo";
+        if (of.includes("CIVIL") || of.includes("SERRA") || of.includes("MARCE") || of.includes("PEDREIRO") || of.includes("PINTU")) return "Thamiris";
         return "Outros";
     }
 
-    function processData() {
+    function inicializarDados() {
         const wmMap = {};
-        wmBase.forEach(row => { if (row['Protocolo pai']) wmMap[row['Protocolo pai']] = row; });
+        wmBase.forEach(r => { if (r['Protocolo pai']) wmMap[r['Protocolo pai']] = r; });
         const hoje = new Date();
         dataFinal = [];
-        const oficinasSet = new Set();
-        const estadosSet = new Set();
 
         agingBase.forEach(row => {
             const prot = String(row['protocolo'] || row['Protocolo'] || "");
             const site = String(row['site'] || row['Site'] || "").toUpperCase();
-            
             if (prot.toUpperCase().startsWith("MAN") && site === 'EG') {
                 const wm = wmMap[prot] || {};
                 const dtRaw = row['dt criação'] || row['Dt Criação'];
                 let dt = new Date((dtRaw - 25569) * 86400 * 1000);
                 if (isNaN(dt.getTime())) dt = new Date(dtRaw);
                 const dias = Math.max(0, Math.floor((hoje - dt) / (1000 * 60 * 60 * 24)));
-                const oficina = wm['Oficina'] || 'N/A';
-                const estado = wm['Estado'] || 'N/A';
-                
                 dataFinal.push({
                     pai: prot, wo: wm['Protocolo'] || '-', aging: dias, site: site,
-                    oficina: oficina, gestor: definirGestor(oficina),
-                    solicitante: wm['Solicitante'] || '-', local: wm['Local'] || '-', estado: estado
+                    oficina: wm['Oficina'] || 'N/A', gestor: definirGestor(wm['Oficina']),
+                    solicitante: wm['Solicitante'] || '-', local: wm['Local'] || '-', estado: wm['Estado'] || 'N/A'
                 });
-                oficinasSet.add(oficina);
-                estadosSet.add(estado);
             }
         });
 
-        // Preenche Checklists Dinâmicos
-        document.getElementById('oficinaChecklist').innerHTML = [...oficinasSet].sort().map(of => `
-            <label class="checkbox-item"><input type="checkbox" value="${of}" checked onchange="aplicarFiltros()"> ${of}</label>
-        `).join('');
+        // Seleção inicial: Tudo marcado
+        selecoesAtuais.gestores = [...new Set(dataFinal.map(d => d.gestor))];
+        selecoesAtuais.oficinas = [...new Set(dataFinal.map(d => d.oficina))];
+        selecoesAtuais.estados = [...new Set(dataFinal.map(d => d.estado))];
         
-        document.getElementById('estadoChecklist').innerHTML = [...estadosSet].sort().map(es => `
-            <label class="checkbox-item"><input type="checkbox" value="${es}" checked onchange="aplicarFiltros()"> ${es}</label>
-        `).join('');
-
         aplicarFiltros();
     }
 
-    function toggleAll(containerId, status) {
-        document.querySelectorAll(`#${containerId} input`).forEach(cb => cb.checked = status);
+    function renderizarChecklists() {
+        // 1. Descobrir o que existe ATUALMENTE com base nos outros filtros
+        const busca = document.getElementById('buscaWO').value.toUpperCase();
+        const selFaixas = [...document.querySelectorAll('#faixaChecklist input:checked')].map(cb => cb.value);
+
+        const dadosParaGestor = dataFinal.filter(d => filtrarPorFaixaEBusca(d, selFaixas, busca));
+        const dadosParaOficina = dadosParaGestor.filter(d => selecoesAtuais.gestores.includes(d.gestor));
+        const dadosParaEstado = dadosParaOficina.filter(d => selecoesAtuais.oficinas.includes(d.oficina));
+
+        // Atualiza Listas Visíveis
+        atualizarChecklist('gestorChecklist', [...new Set(dadosParaGestor.map(d => d.gestor))], selecoesAtuais.gestores, 'gestores');
+        atualizarChecklist('oficinaChecklist', [...new Set(dadosParaOficina.map(d => d.oficina))], selecoesAtuais.oficinas, 'oficinas');
+        atualizarChecklist('estadoChecklist', [...new Set(dadosParaEstado.map(d => d.estado))], selecoesAtuais.estados, 'estados');
+    }
+
+    function atualizarChecklist(id, itensDisponiveis, itensSelecionados, chave) {
+        const container = document.getElementById(id);
+        container.innerHTML = itensDisponiveis.sort().map(item => `
+            <label class="checkbox-item">
+                <input type="checkbox" value="${item}" ${itensSelecionados.includes(item) ? 'checked' : ''} 
+                onchange="atualizarSelecao('${chave}', this)"> ${item}
+            </label>
+        `).join('');
+    }
+
+    function atualizarSelecao(chave, el) {
+        if (el.checked) {
+            if (!selecoesAtuais[chave].includes(el.value)) selecoesAtuais[chave].push(el.value);
+        } else {
+            selecoesAtuais[chave] = selecoesAtuais[chave].filter(v => v !== el.value);
+        }
+        aplicarFiltros();
+    }
+
+    function filtrarPorFaixaEBusca(d, faixas, busca) {
+        const mBusca = d.wo.toUpperCase().includes(busca) || d.pai.toUpperCase().includes(busca) || d.solicitante.toUpperCase().includes(busca);
+        let mFaixa = false;
+        faixas.forEach(f => {
+            if (f === "30-74" && d.aging >= 30 && d.aging <= 74) mFaixa = true;
+            if (f === "75+" && d.aging >= 75) mFaixa = true;
+        });
+        return mBusca && mFaixa;
+    }
+
+    function toggleAll(id, status) {
+        const container = document.getElementById(id);
+        const chave = id === 'gestorChecklist' ? 'gestores' : id === 'oficinaChecklist' ? 'oficinas' : 'estados';
+        container.querySelectorAll('input').forEach(cb => {
+            cb.checked = status;
+            if (status && !selecoesAtuais[chave].includes(cb.value)) selecoesAtuais[chave].push(cb.value);
+            if (!status) selecoesAtuais[chave] = selecoesAtuais[chave].filter(v => v !== cb.value);
+        });
         aplicarFiltros();
     }
 
     function aplicarFiltros() {
-        const selOficinas = [...document.querySelectorAll('#oficinaChecklist input:checked')].map(cb => cb.value);
-        const selGestores = [...document.querySelectorAll('#gestorChecklist input:checked')].map(cb => cb.value);
-        const selEstados = [...document.querySelectorAll('#estadoChecklist input:checked')].map(cb => cb.value);
-        const selFaixas = [...document.querySelectorAll('#faixaChecklist input:checked')].map(cb => cb.value);
         const busca = document.getElementById('buscaWO').value.toUpperCase();
+        const selFaixas = [...document.querySelectorAll('#faixaChecklist input:checked')].map(cb => cb.value);
 
         const filtrados = dataFinal.filter(d => {
-            const mOficina = selOficinas.includes(d.oficina);
-            const mGestor = selGestores.includes(d.gestor);
-            const mEstado = selEstados.includes(d.estado);
-            const mBusca = d.wo.toUpperCase().includes(busca) || d.pai.toUpperCase().includes(busca) || d.solicitante.toUpperCase().includes(busca);
-            let mFaixa = false;
-            selFaixas.forEach(f => {
-                if (f === "30-74" && d.aging >= 30 && d.aging <= 74) mFaixa = true;
-                if (f === "75+" && d.aging >= 75) mFaixa = true;
-            });
-            return mOficina && mGestor && mEstado && mBusca && mFaixa;
+            return selecoesAtuais.gestores.includes(d.gestor) &&
+                   selecoesAtuais.oficinas.includes(d.oficina) &&
+                   selecoesAtuais.estados.includes(d.estado) &&
+                   filtrarPorFaixaEBusca(d, selFaixas, busca);
         });
+
+        renderizarChecklists(); // Atualiza as opções dos menus com base no novo cenário
         updateUI(filtrados);
     }
 
@@ -378,58 +361,29 @@
             Object.entries(resumo).sort((a,b) => b[1]-a[1]).map(([of, q]) => `<div class="card"><h3>${of}</h3><p>${q}</p></div>`).join('');
 
         document.getElementById('tableBody').innerHTML = lista.map(d => `
-            <tr>
-                <td><b>${d.pai}</b></td><td><span class="badge-wo">${d.wo}</span></td>
-                <td style="font-weight:bold; color:${d.aging >= 75 ? 'var(--danger)' : 'inherit'}">${d.aging} d</td>
-                <td>${d.site}</td><td>${d.oficina}</td><td>${d.solicitante}</td>
-                <td>${d.local}</td><td>${d.estado}</td>
-            </tr>
+            <tr><td><b>${d.pai}</b></td><td><span style="background:#fff0f0;padding:2px 5px;border-radius:4px;">${d.wo}</span></td>
+            <td style="font-weight:bold;color:${d.aging>=75?'red':'inherit'}">${d.aging}d</td><td>${d.site}</td>
+            <td>${d.oficina}</td><td>${d.solicitante}</td><td>${d.local}</td><td>${d.estado}</td></tr>
         `).join('');
 
-        const contagem = lista.reduce((acc, cur) => { const lbl = cur.aging + " d"; acc[lbl] = (acc[lbl] || 0) + 1; return acc; }, {});
-        const labels = Object.keys(contagem).sort((a,b) => parseInt(a) - parseInt(b));
+        const ctg = lista.reduce((acc, cur) => { const l = cur.aging + " d"; acc[l] = (acc[l] || 0) + 1; return acc; }, {});
+        const lbls = Object.keys(ctg).sort((a,b) => parseInt(a) - parseInt(b));
         if (chartInstance) chartInstance.destroy();
         chartInstance = new Chart(document.getElementById('canvasChart'), {
             type: 'bar',
-            data: { labels: labels, datasets: [{ data: labels.map(l => contagem[l]), backgroundColor: '#6A0304', borderRadius: 5 }] },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: false, datalabels: { display: true, anchor: 'end', align: 'top', color: '#6A0304', font: { weight: 'bold' } } },
-                scales: { y: { display: false }, x: { grid: { display: false } } }
-            }
+            data: { labels: lbls, datasets: [{ data: lbls.map(l => ctg[l]), backgroundColor: '#6A0304', borderRadius: 5 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: false, datalabels: { display: true, anchor: 'end', align: 'top', color: '#6A0304', font: { weight: 'bold' } } }, scales: { y: { display: false }, x: { grid: { display: false } } } }
         });
     }
 
     function exportarExcel() {
-        const selOficinas = [...document.querySelectorAll('#oficinaChecklist input:checked')].map(cb => cb.value);
-        const selGestores = [...document.querySelectorAll('#gestorChecklist input:checked')].map(cb => cb.value);
-        const selEstados = [...document.querySelectorAll('#estadoChecklist input:checked')].map(cb => cb.value);
-        const selFaixas = [...document.querySelectorAll('#faixaChecklist input:checked')].map(cb => cb.value);
         const busca = document.getElementById('buscaWO').value.toUpperCase();
-
-        const filtrados = dataFinal.filter(d => {
-            const mOficina = selOficinas.includes(d.oficina);
-            const mGestor = selGestores.includes(d.gestor);
-            const mEstado = selEstados.includes(d.estado);
-            const mBusca = d.wo.toUpperCase().includes(busca) || d.pai.toUpperCase().includes(busca) || d.solicitante.toUpperCase().includes(busca);
-            let mFaixa = false;
-            selFaixas.forEach(f => {
-                if (f === "30-74" && d.aging >= 30 && d.aging <= 74) mFaixa = true;
-                if (f === "75+" && d.aging >= 75) mFaixa = true;
-            });
-            return mOficina && mGestor && mEstado && mBusca && mFaixa;
-        });
-
-        if (filtrados.length === 0) { alert("Não há dados para exportar."); return; }
-
-        const ws = XLSX.utils.json_to_sheet(filtrados.map(d => ({
-            "Protocolo MAN": d.pai, "WO": d.wo, "Aging": d.aging, "Site": d.site,
-            "Oficina": d.oficina, "Gestor": d.gestor, "Solicitante": d.solicitante,
-            "Local": d.local, "Estado": d.estado
-        })));
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Dados_EG");
-        XLSX.writeFile(wb, "Relatorio_Aging_EG_Filtrado.xlsx");
+        const selFaixas = [...document.querySelectorAll('#faixaChecklist input:checked')].map(cb => cb.value);
+        const filtrados = dataFinal.filter(d => 
+            selecoesAtuais.gestores.includes(d.gestor) && selecoesAtuais.oficinas.includes(d.oficina) && 
+            selecoesAtuais.estados.includes(d.estado) && filtrarPorFaixaEBusca(d, selFaixas, busca)
+        );
+        XLSX.writeFile(XLSX.utils.book_new(XLSX.utils.book_append_sheet(XLSX.utils.book_new(), XLSX.utils.json_to_sheet(filtrados), "Dados")), "Relatorio_Filtrado.xlsx");
     }
 </script>
 </body>
