@@ -33,7 +33,7 @@
         .nav-item.active { color: #fff; border-bottom: 5px solid #fff; }
         .logo-container img { height: 90px; width: auto; display: block; }
 
-        .container { max-width: 1750px; margin: 20px auto; padding: 0 20px; }
+        .container { max-width: 1850px; margin: 20px auto; padding: 0 20px; }
         .page { display: none; }
         .page.active { display: block; }
 
@@ -77,7 +77,7 @@
         input[type="text"] { padding: 10px; border: 1px solid #dadce0; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; height: 40px; }
         
         .table-container { background: var(--white); border-radius: 0 0 8px 8px; overflow: auto; box-shadow: 0 1px 2px rgba(0,0,0,0.1); max-height: 600px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1800px; } 
+        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 2200px; } 
         th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #eee; position: sticky; top: 0; color: var(--primary); z-index: 10; }
         td { padding: 10px; border-bottom: 1px solid #f1f3f4; }
         .btn-export { background: var(--success); color: white; border: none; padding: 0 20px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 40px; margin-left: auto; }
@@ -151,6 +151,17 @@
                 </div>
             </div>
 
+            <div class="dropdown" id="dropObservacao">
+                <button class="dropbtn" onclick="toggleDropdown('dropObservacao')">Filtrar Observação</button>
+                <div class="dropdown-content">
+                    <div class="multi-select-controls">
+                        <button onclick="toggleAll('obsChecklist', true)">Todas</button>
+                        <button onclick="toggleAll('obsChecklist', false)">Limpar</button>
+                    </div>
+                    <div class="checkbox-list" id="obsChecklist"></div>
+                </div>
+            </div>
+
             <div class="dropdown" id="dropFaixa">
                 <button class="dropbtn" onclick="toggleDropdown('dropFaixa')">Faixa Aging</button>
                 <div class="dropdown-content">
@@ -184,6 +195,8 @@
                         <th>Aberto em</th>
                         <th>Aging</th>
                         <th>Oficina</th>
+                        <th>Descrição Resumida</th>
+                        <th>Observação</th>
                         <th>Estado</th>
                         <th>Anotações de Trabalho</th>
                         <th>Operações Prediais</th>
@@ -201,7 +214,7 @@
 <script>
     let agingBase = null, wmBase = null, dataFinal = [];
     let chartInstance = null;
-    let selecoesAtuais = { gestores: [], oficinas: [], estados: [] };
+    let selecoesAtuais = { gestores: [], oficinas: [], estados: [], observacoes: [] };
 
     window.onclick = function(e) {
         if (!e.target.matches('.dropbtn') && !e.target.closest('.dropdown-content')) {
@@ -307,6 +320,13 @@
                 
                 const opPrediais = row['Operações Prediais'] || row['operações prediais'] || row['Operacoes Prediais'] || row['operacoes prediais'] || '-';
                 const atrib = row['Atribuído'] || row['atribuído'] || row['Atribuido'] || row['atribuido'] || '-';
+                const anotacoes = String(wm['Anotações de trabalho'] || '');
+
+                // Lógica da Coluna Observação
+                let observacao = "Oficina";
+                if (anotacoes.includes("COD 01") || anotacoes.includes("cod 01") || anotacoes.includes("c1")) {
+                    observacao = "Aguardando encerramento planejamento";
+                }
 
                 dataFinal.push({
                     pai: prot, 
@@ -315,11 +335,13 @@
                     aging: dias, 
                     site: site,
                     oficina: wm['Oficina'] || 'N/A', 
+                    descResumida: wm['Descrição resumida'] || wm['Descricão resumida'] || wm['Descricao resumida'] || '-',
+                    observacao: observacao,
                     gestor: definirGestor(wm['Oficina']),
                     solicitante: wm['Solicitante'] || '-', 
                     local: wm['Local'] || '-', 
                     estado: wm['Estado'] || 'N/A',
-                    anotacoes: wm['Anotações de trabalho'] || '',
+                    anotacoes: anotacoes,
                     operacoes: opPrediais, 
                     atribuido: atrib 
                 });
@@ -329,6 +351,7 @@
         selecoesAtuais.gestores = [...new Set(dataFinal.map(d => d.gestor))];
         selecoesAtuais.oficinas = [...new Set(dataFinal.map(d => d.oficina))];
         selecoesAtuais.estados = [...new Set(dataFinal.map(d => d.estado))];
+        selecoesAtuais.observacoes = [...new Set(dataFinal.map(d => d.observacao))];
         
         aplicarFiltros();
     }
@@ -337,13 +360,15 @@
         const busca = document.getElementById('buscaWO').value.toUpperCase();
         const selFaixas = [...document.querySelectorAll('#faixaChecklist input:checked')].map(cb => cb.value);
 
-        const dadosParaGestor = dataFinal.filter(d => filtrarPorFaixaEBusca(d, selFaixas, busca));
-        const dadosParaOficina = dadosParaGestor.filter(d => selecoesAtuais.gestores.includes(d.gestor));
-        const dadosParaEstado = dadosParaOficina.filter(d => selecoesAtuais.oficinas.includes(d.oficina));
+        const dG = dataFinal.filter(d => filtrarPorFaixaEBusca(d, selFaixas, busca));
+        const dO = dG.filter(d => selecoesAtuais.gestores.includes(d.gestor));
+        const dE = dO.filter(d => selecoesAtuais.oficinas.includes(d.oficina));
+        const dObs = dE.filter(d => selecoesAtuais.estados.includes(d.estado));
 
-        atualizarChecklist('gestorChecklist', [...new Set(dadosParaGestor.map(d => d.gestor))], selecoesAtuais.gestores, 'gestores');
-        atualizarChecklist('oficinaChecklist', [...new Set(dadosParaOficina.map(d => d.oficina))], selecoesAtuais.oficinas, 'oficinas');
-        atualizarChecklist('estadoChecklist', [...new Set(dadosParaEstado.map(d => d.estado))], selecoesAtuais.estados, 'estados');
+        atualizarChecklist('gestorChecklist', [...new Set(dG.map(d => d.gestor))], selecoesAtuais.gestores, 'gestores');
+        atualizarChecklist('oficinaChecklist', [...new Set(dO.map(d => d.oficina))], selecoesAtuais.oficinas, 'oficinas');
+        atualizarChecklist('estadoChecklist', [...new Set(dE.map(d => d.estado))], selecoesAtuais.estados, 'estados');
+        atualizarChecklist('obsChecklist', [...new Set(dObs.map(d => d.observacao))], selecoesAtuais.observacoes, 'observacoes');
     }
 
     function atualizarChecklist(id, itensDisponiveis, itensSelecionados, chave) {
@@ -371,6 +396,8 @@
                        String(d.solicitante).toUpperCase().includes(busca) ||
                        String(d.anotacoes).toUpperCase().includes(busca) ||
                        String(d.atribuido).toUpperCase().includes(busca) ||
+                       String(d.descResumida).toUpperCase().includes(busca) ||
+                       String(d.observacao).toUpperCase().includes(busca) ||
                        String(d.operacoes).toUpperCase().includes(busca);
         let mFaixa = false;
         faixas.forEach(f => {
@@ -383,7 +410,8 @@
 
     function toggleAll(id, status) {
         const container = document.getElementById(id);
-        const chave = id === 'gestorChecklist' ? 'gestores' : id === 'oficinaChecklist' ? 'oficinas' : 'estados';
+        const chaveMap = { 'gestorChecklist': 'gestores', 'oficinaChecklist': 'oficinas', 'estadoChecklist': 'estados', 'obsChecklist': 'observacoes' };
+        const chave = chaveMap[id];
         container.querySelectorAll('input').forEach(cb => {
             cb.checked = status;
             if (status && !selecoesAtuais[chave].includes(cb.value)) selecoesAtuais[chave].push(cb.value);
@@ -400,6 +428,7 @@
             return selecoesAtuais.gestores.includes(d.gestor) &&
                    selecoesAtuais.oficinas.includes(d.oficina) &&
                    selecoesAtuais.estados.includes(d.estado) &&
+                   selecoesAtuais.observacoes.includes(d.observacao) &&
                    filtrarPorFaixaEBusca(d, selFaixas, busca);
         });
 
@@ -419,10 +448,12 @@
                 <td>${d.abertoEm}</td>
                 <td style="font-weight:bold;color:${d.aging>=75?'red':'inherit'}">${d.aging}d</td>
                 <td>${d.oficina}</td>
+                <td style="font-size:10px;">${d.descResumida}</td>
+                <td style="font-weight:bold; color:${d.observacao === 'Oficina' ? '#3c4043' : '#d93025'};">${d.observacao}</td>
                 <td>${d.estado}</td>
                 <td style="color:#666; font-size:10px;">${d.anotacoes.substring(0, 80)}${d.anotacoes.length > 80 ? '...' : ''}</td>
                 <td style="font-weight:500;">${d.operacoes}</td>
-                <td style="color:#202124;">${d.atribuido}</td>
+                <td style="color:#202124; font-weight:bold;">${d.atribuido}</td>
                 <td>${d.gestor}</td>
                 <td>${d.local}</td>
             </tr>
@@ -456,6 +487,7 @@
                 selecoesAtuais.gestores.includes(d.gestor) && 
                 selecoesAtuais.oficinas.includes(d.oficina) && 
                 selecoesAtuais.estados.includes(d.estado) && 
+                selecoesAtuais.observacoes.includes(d.observacao) &&
                 filtrarPorFaixaEBusca(d, selFaixas, busca)
             );
 
@@ -470,6 +502,8 @@
                 "Aberto em": d.abertoEm,
                 "Aging (Dias)": d.aging,
                 "Oficina": d.oficina,
+                "Descrição Resumida": d.descResumida,
+                "Observação": d.observacao,
                 "Estado": d.estado,
                 "Operações Prediais": d.operacoes,
                 "Atribuído": d.atribuido,
