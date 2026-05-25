@@ -171,8 +171,8 @@
                     </div>
                     <div class="checkbox-list" id="faixaChecklist">
                         <label class="checkbox-item"><input type="checkbox" value="30-59" checked onchange="aplicarFiltros()"> 30-59 dias</label>
-                        <label class="checkbox-item"><input type="checkbox" value="60-74" checked onchange="aplicarFiltros()"> 60-74 dias</label>
-                        <label class="checkbox-item"><input type="checkbox" value="75+" checked onchange="aplicarFiltros()"> 75+ dias</label>
+                        <label class="checkbox-item"><input type="checkbox" value="60-89" checked onchange="aplicarFiltros()"> 60-89 dias</label>
+                        <label class="checkbox-item"><input type="checkbox" value="90+" checked onchange="aplicarFiltros()"> 75+ dias</label>
                     </div>
                 </div>
             </div>
@@ -402,8 +402,8 @@
         let mFaixa = false;
         faixas.forEach(f => {
             if (f === "30-59" && d.aging >= 30 && d.aging <= 59) mFaixa = true;
-            if (f === "60-74" && d.aging >= 60 && d.aging <= 74) mFaixa = true;
-            if (f === "75+" && d.aging >= 75) mFaixa = true;
+            if (f === "60-74" && d.aging >= 60 && d.aging <= 89) mFaixa = true;
+            if (f === "90+" && d.aging >= 90) mFaixa = true;
         });
         return mBusca && mFaixa;
     }
